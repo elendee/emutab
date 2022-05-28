@@ -5,11 +5,11 @@ new tab todo list chrome extension
 - open Chrome extensions (`chrome://extensions/`), make sure Dev mode is on
 - Put this repo in the folder you use for your Chrome extensions (this can be any folder)
 - click Load Unpacked
-- Extension should now appear, and be enabled - if not, just toggle it on
+- Extension should now appear, and be enabled - if not, toggle it on
 
-## config
+## setup
 
-#### config.js file:
+#### there is one requirement: `config.js` file:
 - create a `config.js` file in the extension folder
 - sample follows.  Use the exact `WS_URL` as given.  The `EMUTAB` fields must match your account.
 ```
