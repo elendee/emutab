@@ -2,9 +2,9 @@
 new tab todo list chrome extension
 
 ## how to manually install an extension:
-- open Chrome extensions (`chrome://extensions/`), make sure Dev mode is on
+- open Chrome extensions (`chrome://extensions/`), make sure Dev mode is on (simple toggle)
 - Put this repo in the folder you use for your Chrome extensions (this can be any folder)
-- click Load Unpacked
+- click Load Unpacked and select the destination folder you just saved
 - Extension should now appear, and be enabled - if not, toggle it on
 
 ## setup
