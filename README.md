@@ -9,6 +9,7 @@ new tab todo list chrome extension
 
 ## setup
 
+- unlike the website, you must have an `https://emu.oko.nyc` account to use the extension
 - create a `config.js` file in the extension folder
 - sample follows.  Use the exact `WS_URL` as given.  The `EMUTAB` fields must match your account.
 ```
