@@ -1,0 +1,12 @@
+{
+	"name": "emu-tab",
+	"version": "1.0",
+	"description": "new tab todo list persisted to a php endpoint",
+    	"permissions": ["storage", "tabs"],
+	"chrome_url_overrides": {
+	      	"newtab": "new-tab.html"
+	},
+	"manifest_version": 2
+}
+
+
