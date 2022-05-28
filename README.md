@@ -7,7 +7,7 @@ new tab todo list chrome extension
 - click Load Unpacked and select the destination folder you just saved
 - Extension should now appear, and be enabled - if not, toggle it on
 
-## setup
+## setup:
 
 - unlike the web version, you must have an `https://emu.oko.nyc` account to use the extension
 - create a `config.js` file with your account login as follows, and save it in the extension folder
