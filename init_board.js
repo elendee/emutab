@@ -159,7 +159,7 @@ scratch.addEventListener('keydown', e => { // keyup seems to get 'just entered w
 			clearTimeout( typing )
 			typing = false
 			update_line(e)
-		}, 3000 )
+		}, GLOBAL.BOARDS.SAVE_INTERVAL )
 
 	}
 	
@@ -169,7 +169,7 @@ scratch.addEventListener('keydown', e => { // keyup seems to get 'just entered w
 		BROKER.publish('BOARD_SAVE')
 		clearTimeout( saving )
 		saving = false
-	}, 3000)
+	}, GLOBAL.BOARDS.SAVE_INTERVAL)
 })
 
 scratch.addEventListener('click', e => { // keyup seems to get 'just entered window' release events
