@@ -18,6 +18,7 @@ import {
 // import pop_options_modal from './board_options.js?v=22'
 import BROKER from './EventBroker.js?v=22'
 import USER from './USER.js?v=22'
+import GLOBAL from './GLOBAL.js?v=22'
 
 
 
@@ -206,7 +207,7 @@ scratch.addEventListener('click', () => {
 	if( initialized_boards ) return
 	hal('success', 'initializing...', 1000 )
 	BROKER.publish('SOCKET_SEND', {
-		type: 'ext_init_boards',
+		type: 'EXT_init_boards',
 	})
 	initialized_boards = true
 	
@@ -857,7 +858,14 @@ const pong_anchor = event => {
 	// console.log( anchor )
 }
 
+const init_complete = event => {
+	// const {  } = event
 
+	if( !get_active_board() ){
+		scratch.value = ''
+	}
+
+}
 
 
 
@@ -984,3 +992,4 @@ BROKER.subscribe('BOARD_OPTIONS', pop_options_modal )
 BROKER.subscribe('BOARD_REFLECT', reflect_options )
 BROKER.subscribe('BOARD_PONG_ANCHOR', pong_anchor )
 BROKER.subscribe('BOARD_TOUCH', board_touch )
+BROKER.subscribe('BOARDS_INIT_COMPLETE', init_complete )

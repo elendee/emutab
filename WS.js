@@ -97,6 +97,10 @@ const init = () => {
 				console.log('debug packet: ', packet )
 				break;
 
+			case 'init_boards_complete':
+				BROKER.publish('BOARDS_INIT_COMPLETE', packet )
+				break;
+
 			// case 'chat':
 			// 	BROKER.publish('ROOM_HANDLE_CHAT', packet )
 			// 	break;
@@ -110,11 +114,11 @@ const init = () => {
 			// 	// BROKER.publish('ROOM_INC_CHATS', packet )
 			// 	break;
 				
-			case 'ext_request_login':
-				console.log('sending login request', packet )
+			case 'EXT_request_login':
+				// console.log('sending login request', packet )
 
 				SOCKET.send(JSON.stringify({
-					type: 'ext_pong',
+					type: 'EXT_pong',
 					// hash: config.EMUTAB.HASH,
 					email: config.EMUTAB.EMAIL,
 					password: config.EMUTAB.PASSWORD,
