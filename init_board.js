@@ -41,7 +41,7 @@ document.body.classList.add('board')
 // const is_admin = header.getAttribute('data-admin') === 'true'
 
 
-
+let initialized_boards = false // the main init bool
 
 
 
@@ -196,6 +196,20 @@ window.addEventListener('popstate', e => { // browser nav actions
 			skip_state: true, // user has just manually navigated history; we don't want to create entries for that
 		})
 	}, 200)
+})
+
+
+
+// init listener:
+scratch.value = '(click anywhere on board to initialize connection)'
+scratch.addEventListener('click', () => {
+	if( initialized_boards ) return
+	hal('success', 'initializing...', 1000 )
+	BROKER.publish('SOCKET_SEND', {
+		type: 'ext_init_boards',
+	})
+	initialized_boards = true
+	
 })
 
 // window.addEventListener('pushstate', e => { // browser nav actions
@@ -372,7 +386,7 @@ const set_active = event => { // private or public
 	// remember
 	localStorage.setItem('emu-active-tab', target_uuid )
 
-	if( !skip_state ) window.history.pushState( {}, '', '/board/' + target_uuid );
+	// if( !skip_state ) window.history.pushState( {}, '', '/board/' + target_uuid );
 
 }
 
@@ -903,43 +917,43 @@ const pong = event => {
 
 // on page load init
 
-let query_uuid
+// let query_uuid
 
-if( location.href.match(/board\/.*/) ){
-	query_uuid = location.href.split('/board/')[1]
+// if( location.href.match(/board\/.*/) ){
+// 	query_uuid = location.href.split('/board/')[1]
 
-	if( query_uuid ){
+// 	if( query_uuid ){
 
-		console.log('loading ', query_uuid )
+// 		console.log('loading ', query_uuid )
 
-		let joining, btn
-		let j = 0
+// 		let joining, btn
+// 		let j = 0
 
-		setTimeout(()=>{
-			BROKER.publish('SOCKET_SEND', {
-				type: 'join_board',
-				uuid: query_uuid,
-			})
-			joining = setInterval(() => {
-				btn = boards.querySelector('.button[data-uuid="' + query_uuid + '"]')
-				if( btn ){
-					btn.click()
-					clearInterval( joining )
-				}else{
-					j++
-				}
-				if( j > 100 ){
-					console.log('failed to join query board: ', query_uuid )
-					clearInterval( joining )
-				}
+// 		setTimeout(()=>{
+// 			BROKER.publish('SOCKET_SEND', {
+// 				type: 'join_board',
+// 				uuid: query_uuid,
+// 			})
+// 			joining = setInterval(() => {
+// 				btn = boards.querySelector('.button[data-uuid="' + query_uuid + '"]')
+// 				if( btn ){
+// 					btn.click()
+// 					clearInterval( joining )
+// 				}else{
+// 					j++
+// 				}
+// 				if( j > 100 ){
+// 					console.log('failed to join query board: ', query_uuid )
+// 					clearInterval( joining )
+// 				}
 
-			}, 300)
+// 			}, 300)
 
-		}, 200)
+// 		}, 200)
 
-	}
+// 	}
 
-}
+// }
 
 
 
