@@ -10,7 +10,7 @@ const spoof_data = { // replaces GLOBAL injection in standard emu
 	PUBLIC_ROOT: '',
 
 	BOARDS: {
-		USER_LIMIT: 3,
+		LOGGED_LIMIT: 5,
 		UNLOGGED_LIMIT: 3,
 		CONTENT_LIMIT: 60 * 1000,
 		SAVE_INTERVAL: 2000,

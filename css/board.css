@@ -81,21 +81,14 @@ pre{
 	display: none;
 }
 
-#last-scratch{
-	position: fixed;
-	z-index: 9;
-	top: 10px;
-	right: 20px;
-	color: #d4c59d;
-	font-size: .8rem;
-}
-
 #how{
+	font-size: 1rem;
 	position: fixed;
 	bottom: 10px;
 	right: 10px;
 	color: white;
 	z-index: 9;
+	cursor: hand;
 }
 #question{
 	padding: 10px;
@@ -118,6 +111,11 @@ pre{
     background: rgba(0, 0, 0, .8);
     padding: 10px;
 }
+/*#all-settings{
+
+}*/
+
+
 
 .main-button{
 	position: fixed;
@@ -345,7 +343,7 @@ span.board-touch{
 	position: fixed;
 	z-index: 9;
 	bottom: 10px;
-	right: 20px;
+	right: 40px;
 }
 #line-wrap div{
 	font-size: .8rem;
@@ -412,6 +410,15 @@ span.board-touch{
 }
 .board-choice input::placeholder{
 	font-weight: bold;
+}
+
+#id-address,
+#id-credentials{
+	color:  orange;
+}
+#id-address div,
+#id-credentials div{
+	color: #35dada;
 }
 
 @media screen and (max-width: 800px){

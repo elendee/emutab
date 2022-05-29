@@ -1,3 +1,4 @@
+import config from './config.js?v=22'
 import BROKER from './EventBroker.js?v=22'
 // import config from './config.js?v=22'
 import hal from './hal.js?v=22'
@@ -17,7 +18,9 @@ import { Modal } from './Modal.js?v=22'
 
 
 
-
+// --------------------------------
+// modals
+// --------------------------------
 
 const pop_options = () => {
 	const active = get_active_board()
@@ -32,11 +35,109 @@ const pop_options = () => {
 	})
 }
 
+const pop_all_settings = () => {
+
+	const modal = new Modal({
+		type: 'all-settings',
+	})
+	const header = document.createElement('h3')
+	header.innerHTML = 'all settings'
+	modal.content.appendChild( header )
+
+	const url = build_simple_display( 'connected to:', config.WS_URL )
+	const user = build_simple_display( 'using account:', [ USER.handle, USER.email ] )
+
+	modal.content.appendChild( header )
+	modal.content.appendChild( url )
+	modal.content.appendChild( user )
+
+	document.body.appendChild( modal.ele )
+
+}
+
+
+
+
+
+// --------------------------------
+// DOM builders
+// --------------------------------
+
+const build_choice = ( type, callback ) => {
+	const wrapper = document.createElement('div')
+	wrapper.classList.add('board-choice')
+	// const header = document.createElement('h4')
+	// header.innerHTML = type
+	// wrapper.appendChild( header )
+	const btn = document.createElement('div')
+	btn.classList.add('button')
+	btn.innerHTML = type
+	wrapper.appendChild( btn )
+	btn.addEventListener('click', callback )
+	return wrapper
+}
+
+const build_simple_display = ( label, values ) => {
+	const wrapper = document.createElement('div')
+	wrapper.classList.add('simple-display')
+	const label_ele = document.createElement('div')
+	label_ele.classList.add('value-label')
+	label_ele.innerHTML = label
+	wrapper.appendChild( label_ele )
+	const content = document.createElement('div')
+	content.classList.add('simple-content')
+	if( Array.isArray(values)){
+		for( const value of values ){
+			content.innerText += value + '\n'
+		}
+	}else{
+		content.innerText = value
+	}
+	return wrapper
+
+}
+
+
+
+
+// --------------------------------
+// lib
+// --------------------------------
+
+const join_board = ( value, modal ) => {
+
+	const slug = parse_slug( value )
+
+	if( !is_emu_uuid( slug ) ){
+		hal('error', !slug ? 'need a value' : 'invalid value - must be ' + GLOBAL.SLUG_LENGTH + ' chars', 3000)
+		return
+	}
+	BROKER.publish('SOCKET_SEND', {
+		type: 'join_board',
+		value: value,
+	})
+	modal.ele.querySelector('.modal-close')?.click()
+}
+
+const create_board = async() => {
+	USER.awaiting_hash = random_hex( 4 )
+	// console.log('adding...', USER.awaiting_hash )
+	BROKER.publish('SOCKET_SEND', {
+		type: 'add_board',
+		hash: USER.awaiting_hash,
+	})	
+}
 
 const get_active_board = window.get_active_board = () => {
 	const btn = boards.querySelector('.button.active')
 	if( !btn ) return false
 	return btn.getAttribute('data-uuid')
+}
+
+const parse_emu_location = data => {
+	if( location.href.match(/chrome-extension/)) return data
+	if( data.match(/emu.oko.nyc/)) return 'emu.oko.nyc'
+	return data
 }
 
 
@@ -45,6 +146,26 @@ const get_active_board = window.get_active_board = () => {
 
 
 
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+// --------------------------------
+// init sequence
+// --------------------------------
 
 // main content element
 const scratch = document.createElement('textarea')
@@ -93,13 +214,25 @@ how.id ='how'
 how.innerHTML = `
 <div id='question'>?</div>
 <div id='hover'>
+	<div id='id-address'>
+		<div>connected to:</div>
+		${ parse_emu_location( config.WS_URL ) }
+	</div>
+	<div id='id-credentials'>
+		<div>signed in as:</div>
+	</div>
 	<p>Emu boards are plaintext.  They are private by default, but you can toggle them public and get a link from the settings to share with friends.</p>
 	<p>Boards are saved and updated as you type.</p>
-	<p>Logged users can save 10 boards.</p>
-	<p>Unlogged users' boards will be deleted after 24 hours.</p>
+	<p>Logged users can save ${ GLOBAL.BOARDS.LOGGED_LIMIT } boards.</p>
+	<p>Unlogged users' boards will be deleted after ${ GLOBAL.BOARDS.UNLOGGED_BOARD_HOURS } hours.</p>
 </div>
 `
 content.appendChild( how )
+// const all_settings = document.createElement('div')
+// all_settings.id ='all-settings'
+// all_settings.innerHTML = `<img src='/resource/media/gear.png'>`
+// all_settings.addEventListener('click', pop_all_settings )
+// content.appendChild( all_settings )
 
 // options
 const options = document.createElement('div')
@@ -124,10 +257,7 @@ anchor.addEventListener('click', () => {
 })
 content.appendChild( anchor )
 
-// save indicator
-const last_scratch = document.createElement('div')
-last_scratch.id = 'last-scratch'
-content.appendChild( last_scratch )
+
 
 const toggle = () => {
 	content.classList.toggle('toggled')
@@ -138,28 +268,6 @@ mobile_toggle.classList.add('button')
 mobile_toggle.id = 'menu-toggle'
 mobile_toggle.addEventListener('click', toggle )
 content.appendChild( mobile_toggle )
-
-
-
-// const m_save = document.createElement('div')
-// m_save.innerHTML = 'save'
-// m_save.classList.add('button')
-// m_save.id = 'mobile-save'
-// m_save.addEventListener('click', () => {
-// 	BROKER.publish('BOARD_SAVE')
-// })
-// content.appendChild( m_save )
-
-
-// const m_refresh = document.createElement('div')
-// m_refresh.innerHTML = 'refresh'
-// m_refresh.classList.add('button')
-// m_refresh.id = 'mobile-refresh'
-// m_refresh.addEventListener('click', () => {
-// 	BROKER.publish('BOARD_REFRESH')
-// })
-// content.appendChild( m_refresh )
-
 
 
 const add_board = document.createElement('div')
@@ -200,43 +308,22 @@ add_board.addEventListener('click', () => {
 })
 content.appendChild( add_board )
 
-const join_board = ( value, modal ) => {
 
-	const slug = parse_slug( value )
 
-	if( !is_emu_uuid( slug ) ){
-		hal('error', !slug ? 'need a value' : 'invalid value - must be ' + GLOBAL.SLUG_LENGTH + ' chars', 3000)
-		return
-	}
-	BROKER.publish('SOCKET_SEND', {
-		type: 'join_board',
-		value: value,
-	})
-	modal.ele.querySelector('.modal-close')?.click()
-}
 
-const create_board = async() => {
-	USER.awaiting_hash = random_hex( 4 )
-	// console.log('adding...', USER.awaiting_hash )
-	BROKER.publish('SOCKET_SEND', {
-		type: 'add_board',
-		hash: USER.awaiting_hash,
-	})	
-}
 
-const build_choice = ( type, callback ) => {
-	const wrapper = document.createElement('div')
-	wrapper.classList.add('board-choice')
-	// const header = document.createElement('h4')
-	// header.innerHTML = type
-	// wrapper.appendChild( header )
-	const btn = document.createElement('div')
-	btn.classList.add('button')
-	btn.innerHTML = type
-	wrapper.appendChild( btn )
-	btn.addEventListener('click', callback )
-	return wrapper
-}
+
+
+
+
+
+
+
+
+
+
+
+
 
 
 
@@ -246,7 +333,6 @@ const build_choice = ( type, callback ) => {
 
 
 export {
-	last_scratch,
 	scratch,
 	boards,
 	priv,

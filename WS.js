@@ -54,7 +54,7 @@ const init = () => {
 
 			case 'init_user':
 				// console.log( packet )
-				for( const key in packet.user ) USER[ key ] = packet.user[ key ]
+				USER.hydrate( packet.user )
 				break;
 
 			case 'pong':
