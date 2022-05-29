@@ -1,5 +1,5 @@
 import hal from './hal.js?v=22'
-
+import GLOBAL from './GLOBAL.js?v=22'
 
 
 
@@ -84,11 +84,22 @@ function ms_to_iso( ms ){
 }
 
 
-function is_valid_uuid( data ){
+function is_emu_uuid( data ){
+	/*
+		NOT a technical uuid - Emu specific
+	*/
 
-	if( typeof( data === 'string' ) && data.length > 10 ) return true
+	if( typeof data === 'string' && data.length === GLOBAL.SLUG_LENGTH ) return true
 	return false
 
+}
+
+const parse_slug = value => {
+	if( typeof value === 'string' && value.match(/\/board\//) ){
+		return value.substr( value.indexOf('/board/') + 7 )
+	}else{
+		return value
+	} 
 }
 
 
@@ -243,7 +254,8 @@ export {
 	ms_to_iso,
 	getBaseLog,
 	scry,
-	is_valid_uuid,
+	is_emu_uuid,
+	parse_slug,
 	
 	validate_number,
 	random_entry,

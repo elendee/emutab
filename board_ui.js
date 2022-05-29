@@ -2,10 +2,14 @@ import BROKER from './EventBroker.js?v=22'
 // import config from './config.js?v=22'
 import hal from './hal.js?v=22'
 import {
+	is_emu_uuid,
+	parse_slug,
 	random_hex,
 } from './lib.js?v=22'
 import fetch_wrap from './fetch_wrap.js?v=22'
 import USER from './USER.js?v=22'
+import GLOBAL from './GLOBAL.js?v=22'
+import { Modal } from './Modal.js?v=22'
 
 
 
@@ -91,7 +95,7 @@ how.innerHTML = `
 <div id='hover'>
 	<p>Emu boards are plaintext.  They are private by default, but you can toggle them public and get a link from the settings to share with friends.</p>
 	<p>Boards are saved and updated as you type.</p>
-	<p>Users can make 3 boards.</p>
+	<p>Logged users can save 10 boards.</p>
 	<p>Unlogged users' boards will be deleted after 24 hours.</p>
 </div>
 `
@@ -164,15 +168,75 @@ add_board.classList.add('main-button')
 add_board.innerHTML = '+'
 add_board.title = 'create board'
 add_board.addEventListener('click', () => {
+
+	const modal = new Modal({
+		type: 'add_board',
+	})
+
+	const add = build_choice('create board', () => {
+		create_board()
+		modal.ele.querySelector('.modal-close')?.click()
+	})
+
+	const slug = document.createElement('input')
+	slug.classList.add('input')
+	slug.placeholder = 'full URL or code you want to join - either will work'
+
+	const join = build_choice('join board', () => {
+		const value = parse_slug( slug.value?.trim() )
+		join_board( value, modal )
+	})
+
+	const header = document.createElement('h4')
+	header.innerHTML = 'create or join a board'
+
+	modal.content.appendChild( header )
+	modal.content.appendChild( add )
+	modal.content.appendChild( join )
+	join.appendChild( slug )
+
+	document.body.appendChild( modal.ele )
+
+})
+content.appendChild( add_board )
+
+const join_board = ( value, modal ) => {
+
+	const slug = parse_slug( value )
+
+	if( !is_emu_uuid( slug ) ){
+		hal('error', !slug ? 'need a value' : 'invalid value - must be ' + GLOBAL.SLUG_LENGTH + ' chars', 3000)
+		return
+	}
+	BROKER.publish('SOCKET_SEND', {
+		type: 'join_board',
+		value: value,
+	})
+	modal.ele.querySelector('.modal-close')?.click()
+}
+
+const create_board = async() => {
 	USER.awaiting_hash = random_hex( 4 )
 	// console.log('adding...', USER.awaiting_hash )
 	BROKER.publish('SOCKET_SEND', {
 		type: 'add_board',
 		hash: USER.awaiting_hash,
-	})
-})
-content.appendChild( add_board )
+	})	
+}
 
+const build_choice = ( type, callback ) => {
+	const wrapper = document.createElement('div')
+	wrapper.classList.add('board-choice')
+	// const header = document.createElement('h4')
+	// header.innerHTML = type
+	// wrapper.appendChild( header )
+	const btn = document.createElement('div')
+	btn.classList.add('button')
+	btn.innerHTML = type
+	wrapper.appendChild( btn )
+	btn.addEventListener('click', callback )
+	return wrapper
+}
 
 
 

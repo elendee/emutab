@@ -15,6 +15,8 @@ const spoof_data = { // replaces GLOBAL injection in standard emu
 		CONTENT_LIMIT: 60 * 1000,
 	},
 
+	SLUG_LENGTH: 12,
+
 }
 
 let glob = false
