@@ -15,7 +15,6 @@ import {
 	line_place,
 	line_total,
 } from  './board_ui.js?v=22' 
-// import pop_options_modal from './board_options.js?v=22'
 import BROKER from './EventBroker.js?v=22'
 import USER from './USER.js?v=22'
 import GLOBAL from './GLOBAL.js?v=22'
@@ -101,11 +100,14 @@ class User {
 const render_colors = board_data => {
 	if( board_data.fg_color ) scratch.style.color = board_data.fg_color
 	if( board_data.bg_color ) scratch.style['background-color'] = board_data.bg_color
+	if( board_data.tab_color ){
+		const btn = boards.querySelector('.button[data-uuid="' + board_data.uuid + '"]')
+		if( btn ){
+			btn.style['background'] = board_data.tab_color //+ '99'
+		}
+	}
 }
 
-// const render_lines = () => {
-
-// }
 
 const update_line = e => {
 	if( typeof scratch.selectionStart === 'number' ){
@@ -696,6 +698,16 @@ const pop_options_modal = event => {
 	})
 	board_colors.appendChild( bg_color )
 	bg_color.querySelector('input').value = board.bg_color 
+	const tab_color = build_edit_field('color', 'tab', () => {
+		BROKER.publish('SOCKET_SEND', {
+			type: 'board_set_option',
+			uuid: board.uuid,
+			option: 'tab_color',
+			state: tab_color.querySelector('input').value,
+		})
+	})
+	board_colors.appendChild( tab_color )
+	tab_color.querySelector('input').value = board.tab_color 
 	modal.left_panel.appendChild( board_colors )
 
 	// anchors

@@ -1,3 +1,5 @@
+
+
 body{
 /*     background: black; */
     margin: 0px;
@@ -180,19 +182,24 @@ pre{
 	max-width: 76px;
 	overflow: hidden;
 	font-weight: initial;
+	opacity: 1;
 }
 #boards .button:hover{
 	max-width: 999%;
 }
-.button:hover{
-	background: rgba(40, 100, 120, .7)
+#boards .button:hover{
+	/*background: rgba(40, 100, 120, .7)*/
+	/*opacity: .5;*/
+	border-left:  3px solid green;
+	transform:  scale(1.1);
 }
-.button.active{
-    background: #2c264f;
+#boards .button.active{
+    /*background: #2c264f;*/
     font-weight: bold;
+	border-left:  3px solid lightgreen;
 }
 .button:hover.active{
-	background: rgba(40, 100, 120, .7)
+	/*background: rgba(40, 100, 120, .7)*/
 }
 
 #boards .explain{
