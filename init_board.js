@@ -546,6 +546,13 @@ const handle_board = event => {
 
 	}
 
+	// tab
+	const btn = boards.querySelector('.button[data-uuid="' + board.uuid + '"]')
+	if( btn ){
+		btn.innerHTML = board.name
+	}
+
+
 	// colors
 	render_colors( board )
 
