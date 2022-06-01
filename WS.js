@@ -82,7 +82,8 @@ const init = () => {
 				break;
 
 			case 'reflect_options':
-				BROKER.publish('BOARD_REFLECT', packet )
+				console.log('deprecated', packet )
+				// BROKER.publish('BOARD_REFLECT', packet )
 				break;
 
 			case 'board_touch':

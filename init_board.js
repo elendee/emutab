@@ -748,50 +748,52 @@ const reflect_value = ( key, wrapper, board ) => {
 
 const reflect_options = event => {
 
-	const { board, allowed_users } = event
+	console.log('deprecated', event )
 
-	// console.log( event )
-	const active = get_active_board()
+	// const { board, allowed_users } = event
 
-	const is_editing = document.querySelector('.modal[data-board-uuid="' + board?.uuid + '"]')
+	// // console.log( event )
+	// const active = get_active_board()
 
-	if( is_editing ){
+	// const is_editing = document.querySelector('.modal[data-board-uuid="' + board?.uuid + '"]')
 
-		// admin ripples
-		hal('success', 'board options updated', 3000)
-		// url
-		const wrapper = document.querySelector('.modal .board-share').parentElement
-		if( wrapper ){
-			reflect_public_url( wrapper, board )
-			reflect_value( 'name', wrapper, board )
-		}else{
-			console.log('missing public/private wrapper')
-		}
+	// if( is_editing ){
 
-	}else{
-		// users who happen to be on the board when its edited
-		// hal('standard', 'board options updated', 3000)
+	// 	// admin ripples
+	// 	hal('success', 'board options updated', 3000)
+	// 	// url
+	// 	const wrapper = document.querySelector('.modal .board-share').parentElement
+	// 	if( wrapper ){
+	// 		reflect_public_url( wrapper, board )
+	// 		reflect_value( 'name', wrapper, board )
+	// 	}else{
+	// 		console.log('missing public/private wrapper')
+	// 	}
 
-	}
+	// }else{
+	// 	// users who happen to be on the board when its edited
+	// 	// hal('standard', 'board options updated', 3000)
 
-	// board name
-	const btn = boards.querySelector('.button[data-uuid="' + board.uuid + '"]')
-	if( btn ) btn.innerText = board.name
+	// }
 
-	// board public
-	if( BOARDS[ board.uuid ].is_public !== board.is_public ){
-		hal('standard', board.name + ' is now ' + ( board.is_public ? 'public' : 'private' ) , 10 * 1000 )
-	}
+	// // board name
+	// const btn = boards.querySelector('.button[data-uuid="' + board.uuid + '"]')
+	// if( btn ) btn.innerText = board.name
 
-	// colors
-	if( active === board.uuid ){
-		render_colors( board )
-	}
+	// // board public
+	// if( BOARDS[ board.uuid ].is_public !== board.is_public ){
+	// 	hal('standard', board.name + ' is now ' + ( board.is_public ? 'public' : 'private' ) , 10 * 1000 )
+	// }
 
-	if( Array.isArray( allowed_users ) ){
-		// user list needs to be rendered separately probably
-		console.log('awaiting allowed users', allowed_users )		
-	}
+	// // colors
+	// // if( active === board.uuid ){
+	// render_colors( board )
+	// // }
+
+	// if( Array.isArray( allowed_users ) ){
+	// 	// user list needs to be rendered separately probably
+	// 	console.log('awaiting allowed users', allowed_users )		
+	// }
 
 
 }
@@ -1001,7 +1003,7 @@ BROKER.subscribe('BOARD_SAVE', save )
 BROKER.subscribe('BOARD_PONG_BOARD', handle_board )
 BROKER.subscribe('BOARD_ATTENDANCE', handle_attendance )
 BROKER.subscribe('BOARD_OPTIONS', pop_options_modal )
-BROKER.subscribe('BOARD_REFLECT', reflect_options )
+// BROKER.subscribe('BOARD_REFLECT', reflect_options )
 BROKER.subscribe('BOARD_PONG_ANCHOR', pong_anchor )
 BROKER.subscribe('BOARD_TOUCH', board_touch )
 BROKER.subscribe('BOARDS_INIT_COMPLETE', init_complete )
