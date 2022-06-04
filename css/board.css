@@ -180,7 +180,6 @@ pre{
 #boards .button{
 	white-space: nowrap;
 	max-width: 76px;
-	overflow: hidden;
 	font-weight: initial;
 	opacity: 1;
 }
@@ -195,6 +194,30 @@ pre{
     font-weight: bold;
 	border-left:  3px solid lightgreen;
 }
+.dir-arrow{
+	position: absolute;
+	top:  0;
+	background: black;
+	font-size:  1.2rem;
+	padding:  1px 8px;
+	font-weight:  bold;
+
+	display: none;
+}
+.dir-arrow:nth-of-type(1){
+	right:  -22px;
+}
+.dir-arrow:nth-of-type(2){
+	right:  -48px;
+}
+.button:hover .dir-arrow{
+	display:  inline-block;
+}
+.dir-arrow:hover{
+	background: grey;
+}
+
+
 
 
 #boards .explain{

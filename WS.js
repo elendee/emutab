@@ -98,7 +98,7 @@ const init = () => {
 				console.log('debug packet: ', packet )
 				break;
 
-			case 'init_boards_complete':
+			case 'init_boards_complete': // for prompt
 				BROKER.publish('BOARDS_INIT_COMPLETE', packet )
 				break;
 

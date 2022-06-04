@@ -41,7 +41,6 @@ document.body.classList.add('board')
 // const is_admin = header.getAttribute('data-admin') === 'true'
 
 
-let initialized_boards = false // the main init bool
 
 
 
@@ -76,11 +75,24 @@ class Board {
 		this.tab.title = 'click to set active: ' + this.name
 		this.tab.innerHTML = this.name || this.uuid.substr(0,4)
 		this.tab.setAttribute('data-uuid', this.uuid )
-		this.tab.addEventListener('click', () => {
+		setTimeout(() => {
+			this.tab.appendChild( this.build_arrow(1) )
+			this.tab.appendChild( this.build_arrow(0) )			
+		}, 200 )
+		this.tab.addEventListener('click', e => {
+			if( e.target.classList.contains('dir-arrow')) return
 			BROKER.publish('BOARD_SET_ACTIVE', {
 				uuid: this.uuid,
 			})
 		})
+	}
+	build_arrow( dir ){
+		const wrapper = document.createElement('div')
+		wrapper.innerHTML = dir ? '&uarr;' : '&darr;'
+		wrapper.setAttribute('data-dir', dir )
+		wrapper.classList.add('dir-arrow')
+		wrapper.addEventListener('click', move_tab )
+		return wrapper
 	}
 
 }
@@ -123,7 +135,30 @@ const get_selection = textarea => {
 	return textarea.value.substr( cursor[0], ( cursor[1] - cursor[0] ) )
 }
 
+const move_tab = e => {
+	const tab = e.target.parentElement
+	const dir = e.target.getAttribute('data-dir')
 
+	const shift = Number( dir ) ? 'down': 'up'
+
+	lib.shift_element( shift, tab, '.button', true )
+
+	BROKER.publish('SOCKET_SEND', {
+		type: 'save_index',
+		index: build_index(),
+	})
+
+}
+
+const build_index = () => {
+	const index = {
+		account: [],
+		all: [],
+	}
+	for( const btn of priv.querySelectorAll('.button')) index.account.push( btn.getAttribute('data-uuid'))
+	for( const btn of invites.querySelectorAll('.button')) index.all.push( btn.getAttribute('data-uuid'))
+	return index
+}
 
 
 
@@ -205,13 +240,21 @@ window.addEventListener('popstate', e => { // browser nav actions
 
 // init listener:
 scratch.value = '(click anywhere on board to initialize connection)'
+let initializing_boards = false
+let initialized_boards = false // the main init bool
+
 scratch.addEventListener('click', () => {
-	if( initialized_boards ) return
+	if( initializing_boards || initialized_boards ) return
 	hal('success', 'initializing...', 1000 )
 	BROKER.publish('SOCKET_SEND', {
 		type: 'EXT_init_boards',
 	})
-	initialized_boards = true
+	initializing_boards = true
+	setTimeout(() => {
+		if( !initialized_boards ){
+			hal('error', 'there seems to have been a problem establishing connection; try refreshing the page' )
+		}
+	}, 5000)
 	
 })
 
@@ -262,6 +305,7 @@ scratch.addEventListener('keydown', e => {
 // --------------------------------------------------------------------------------------------------------------------------------------------
 // DOM builders
 // --------------------------------------------------------------------------------------------------------------------------------------------
+
 const build_add_users = container => {
 	/*
 		add 'users who can edit' form for modal
@@ -569,8 +613,54 @@ const handle_board = event => {
 		hal('success', 'board updated: ' + b.name, 4000 )
 	}
 
+	if( USER._board_order ){
+		sort_boards()
+	}
+
 }
 
+
+
+const sort_boards = () => {
+
+	try{
+
+		const sorted = JSON.parse( USER._board_order )
+
+		// private
+		const suspended_priv = priv.querySelectorAll('.button')
+		for( const btn of suspended_priv ) btn.remove()
+		for( const uuid of sorted.account ){
+			for( const ele of suspended_priv ){
+				if( ele.getAttribute('data-uuid') === uuid ){
+					priv.appendChild( ele )
+				}
+			}
+		}
+		for( const ele of suspended_priv ){
+			if( !ele.parentElement ) priv.appendChild( ele )
+		}
+
+		// all
+		const suspended_all = invites.querySelectorAll('.button')
+		for( const btn of suspended_all ) btn.remove()
+		for( const uuid of sorted.all ){
+			for( const ele of suspended_all ){
+				if( ele.getAttribute('data-uuid') === uuid ){
+					invites.appendChild( ele )
+					// debugger
+				}
+			}
+		}
+		for( const ele of suspended_all ){
+			if( !ele.parentElement ) invites.appendChild( ele )
+		}
+
+	}catch( err ){
+		console.log( 'sort boards err: ', err )
+	}
+
+}
 
 
 
@@ -882,9 +972,13 @@ const pong_anchor = event => {
 const init_complete = event => {
 	// const {  } = event
 
+
 	if( !get_active_board() ){
 		scratch.value = ''
 	}
+
+	initialized_boards = true
+	initializing_boards = false
 
 }
 
