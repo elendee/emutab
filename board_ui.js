@@ -18,6 +18,55 @@ import { Modal } from './Modal.js?v=22'
 
 
 
+
+// --------------------------------
+// lib
+// --------------------------------
+
+const join_board = ( value, modal ) => {
+
+	const slug = parse_slug( value )
+
+	if( !is_emu_uuid( slug ) ){
+		hal('error', !slug ? 'need a value' : 'invalid value - must be ' + GLOBAL.SLUG_LENGTH + ' chars', 3000)
+		return
+	}
+	BROKER.publish('SOCKET_SEND', {
+		type: 'join_board',
+		value: value,
+	})
+	modal.ele.querySelector('.modal-close')?.click()
+}
+
+const create_board = async() => {
+	USER.awaiting_hash = random_hex( 4 )
+	// console.log('adding...', USER.awaiting_hash )
+	BROKER.publish('SOCKET_SEND', {
+		type: 'add_board',
+		hash: USER.awaiting_hash,
+	})	
+}
+
+const get_active_board = window.get_active_board = () => {
+	const tab = boards.querySelector('.tab.active')
+	if( !tab ) return false
+	return tab.getAttribute('data-uuid')
+}
+
+
+
+
+const parse_emu_location = data => {
+	if( location.href.match(/chrome-extension/)) return data
+	if( data.match(/emu.oko.nyc/)) return 'emu.oko.nyc'
+	return data
+}
+
+
+
+
+
+
 // --------------------------------
 // modals
 // --------------------------------
@@ -54,6 +103,12 @@ const pop_all_settings = () => {
 	document.body.appendChild( modal.ele )
 
 }
+
+
+
+
+
+
 
 
 
@@ -100,60 +155,6 @@ const build_simple_display = ( label, values ) => {
 
 
 
-// --------------------------------
-// lib
-// --------------------------------
-
-const join_board = ( value, modal ) => {
-
-	const slug = parse_slug( value )
-
-	if( !is_emu_uuid( slug ) ){
-		hal('error', !slug ? 'need a value' : 'invalid value - must be ' + GLOBAL.SLUG_LENGTH + ' chars', 3000)
-		return
-	}
-	BROKER.publish('SOCKET_SEND', {
-		type: 'join_board',
-		value: value,
-	})
-	modal.ele.querySelector('.modal-close')?.click()
-}
-
-const create_board = async() => {
-	USER.awaiting_hash = random_hex( 4 )
-	// console.log('adding...', USER.awaiting_hash )
-	BROKER.publish('SOCKET_SEND', {
-		type: 'add_board',
-		hash: USER.awaiting_hash,
-	})	
-}
-
-const get_active_board = window.get_active_board = () => {
-	const btn = boards.querySelector('.button.active')
-	if( !btn ) return false
-	return btn.getAttribute('data-uuid')
-}
-
-const parse_emu_location = data => {
-	if( location.href.match(/chrome-extension/)) return data
-	if( data.match(/emu.oko.nyc/)) return 'emu.oko.nyc'
-	return data
-}
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
 
 
 
@@ -164,7 +165,79 @@ const parse_emu_location = data => {
 
 
 // --------------------------------
-// init sequence
+// misc
+// --------------------------------
+
+// menu toggle
+const toggle = () => {
+	content.classList.toggle('toggled')
+}
+const mobile_toggle = document.createElement('div')
+mobile_toggle.innerHTML = '&#x1f354'// 'menu'
+mobile_toggle.classList.add('button')
+mobile_toggle.id = 'menu-toggle'
+mobile_toggle.addEventListener('click', toggle )
+content.appendChild( mobile_toggle )
+
+
+// tooltip
+const how = document.createElement('div')
+how.id ='how'
+how.innerHTML = `
+<div id='question'>?</div>
+<div id='hover'>
+	<div id='id-address'>
+		<div>connected to:</div>
+		${ parse_emu_location( config.WS_URL ) }
+	</div>
+	<div id='id-credentials'>
+		<div>signed in as:</div>
+	</div>
+	<p>Emu boards are plaintext.  They are private by default, but you can toggle them public and get a link from the settings to share with friends.</p>
+	<p>Boards are saved and updated as you type.</p>
+	<p>Logged users can save ${ GLOBAL.BOARDS.LOGGED_LIMIT } boards.</p>
+	<p>Unlogged users' boards will be deleted after ${ GLOBAL.BOARDS.UNLOGGED_BOARD_HOURS } hours.</p>
+</div>
+`
+content.appendChild( how )
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+// --------------------------------
+// init sequence / boards 
 // --------------------------------
 
 // main content element
@@ -208,74 +281,80 @@ invites.innerHTML = 'all'
 // invites.classList.add('content')
 boards.appendChild( invites )
 
-// tooltip
-const how = document.createElement('div')
-how.id ='how'
-how.innerHTML = `
-<div id='question'>?</div>
-<div id='hover'>
-	<div id='id-address'>
-		<div>connected to:</div>
-		${ parse_emu_location( config.WS_URL ) }
-	</div>
-	<div id='id-credentials'>
-		<div>signed in as:</div>
-	</div>
-	<p>Emu boards are plaintext.  They are private by default, but you can toggle them public and get a link from the settings to share with friends.</p>
-	<p>Boards are saved and updated as you type.</p>
-	<p>Logged users can save ${ GLOBAL.BOARDS.LOGGED_LIMIT } boards.</p>
-	<p>Unlogged users' boards will be deleted after ${ GLOBAL.BOARDS.UNLOGGED_BOARD_HOURS } hours.</p>
-</div>
-`
-content.appendChild( how )
 // const all_settings = document.createElement('div')
 // all_settings.id ='all-settings'
 // all_settings.innerHTML = `<img src='/resource/media/gear.png'>`
 // all_settings.addEventListener('click', pop_all_settings )
 // content.appendChild( all_settings )
 
-// options
-const options = document.createElement('div')
-options.id = 'options'
-options.classList.add('main-button')
-options.title = 'board settings (Esc to open/close)'
-options.innerHTML = '<img src="/resource/media/gear.png">'
-options.addEventListener('click', pop_options )
-content.appendChild( options )
-
-// anchors
-const anchor = document.createElement('div')
-anchor.id = 'anchor'
-anchor.classList.add('main-button')
-anchor.title = 'anchors are immutable saves.  click to create, then access them in the board settings'
-anchor.innerHTML = '<img src="/resource/media/anchor.png">'
-anchor.addEventListener('click', () => {
-	BROKER.publish('SOCKET_SEND', {
-		type: 'create_anchor',
-		board_uuid: get_active_board(),
-	})
-})
-content.appendChild( anchor )
 
 
 
-const toggle = () => {
-	content.classList.toggle('toggled')
+// // options
+// const options = document.createElement('div')
+// options.id = 'options'
+// options.classList.add('main-button')
+// options.title = 'board settings (Esc to open/close)'
+// options.innerHTML = '<img src="/resource/media/gear.png">'
+// options.addEventListener('click', pop_options )
+// content.appendChild( options )
+
+// // anchors
+// const anchor = document.createElement('div')
+// anchor.id = 'anchor'
+// anchor.classList.add('main-button')
+// anchor.title = 'anchors are immutable saves.  click to create, then access them in the board settings'
+// anchor.innerHTML = '<img src="/resource/media/anchor.png">'
+// anchor.addEventListener('click', () => {
+// 	BROKER.publish('SOCKET_SEND', {
+// 		type: 'create_anchor',
+// 		board_uuid: get_active_board(),
+// 	})
+// })
+// content.appendChild( anchor )
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+// --------------------------------
+// 3 main buttons 
+// --------------------------------
+
+const build_main_button = ( id, title ) => {
+	const wrapper = document.createElement('div')
+	wrapper.classList.add('main-button')
+	if( id ) wrapper.id = id
+	if( title ) wrapper.title = title 
+	const liner = document.createElement('div')
+	wrapper.appendChild( liner)
+	liner.classList.add('flex-wrapper')
+	return {
+		wrapper,
+		liner,
+	}
 }
-const mobile_toggle = document.createElement('div')
-mobile_toggle.innerHTML = '&#x1f354'// 'menu'
-mobile_toggle.classList.add('button')
-mobile_toggle.id = 'menu-toggle'
-mobile_toggle.addEventListener('click', toggle )
-content.appendChild( mobile_toggle )
 
+// 3 main actions wrapper
+const main_wrapper = document.createElement('div')
+main_wrapper.id = 'main-wrapper'
+content.appendChild( main_wrapper )
 
-const add_board = document.createElement('div')
-add_board.id = 'add-board'
-add_board.classList.add('main-button')
-add_board.innerHTML = '+'
-add_board.title = 'create board'
-add_board.addEventListener('click', () => {
+// create new / add
+const add_board = build_main_button('add-board', 'create board')
+add_board.liner.innerHTML = '+'
+add_board.wrapper.addEventListener('click', () => {
 
 	const modal = new Modal({
 		type: 'add_board',
@@ -305,8 +384,75 @@ add_board.addEventListener('click', () => {
 
 	document.body.appendChild( modal.ele )
 
+	// USER.awaiting_hash = random_hex( 4 )
+	// // console.log('adding...', USER.awaiting_hash )
+	// BROKER.publish('SOCKET_SEND', {
+	// 	type: 'add_board',
+	// 	hash: USER.awaiting_hash,
+	// })
 })
-content.appendChild( add_board )
+main_wrapper.appendChild( add_board.wrapper )
+
+// anchors
+const anchor = build_main_button('anchor', 'anchors are immutable saves.  click to create, then access them in the board settings')
+anchor.liner.innerHTML = '<img src="/resource/media/anchor.png">'
+anchor.wrapper.addEventListener('click', () => {
+	BROKER.publish('SOCKET_SEND', {
+		type: 'create_anchor',
+		board_uuid: get_active_board(),
+	})
+})
+main_wrapper.appendChild( anchor.wrapper )
+
+// options
+const options = build_main_button( 'options', 'board settings (Esc to open/close)')
+options.liner.innerHTML = '<img src="/resource/media/gear.png">'
+options.wrapper.addEventListener('click', pop_options )
+main_wrapper.appendChild( options.wrapper )
+
+
+
+
+
+
+
+// const add_board = document.createElement('div')
+// add_board.id = 'add-board'
+// add_board.classList.add('main-button')
+// add_board.innerHTML = '+'
+// add_board.title = 'create board'
+// add_board.addEventListener('click', () => {
+
+// 	const modal = new Modal({
+// 		type: 'add_board',
+// 	})
+
+// 	const add = build_choice('create board', () => {
+// 		create_board()
+// 		modal.ele.querySelector('.modal-close')?.click()
+// 	})
+
+// 	const slug = document.createElement('input')
+// 	slug.classList.add('input')
+// 	slug.placeholder = 'full URL or code you want to join - either will work'
+
+// 	const join = build_choice('join board', () => {
+// 		const value = parse_slug( slug.value?.trim() )
+// 		join_board( value, modal )
+// 	})
+
+// 	const header = document.createElement('h4')
+// 	header.innerHTML = 'create or join a board'
+
+// 	modal.content.appendChild( header )
+// 	modal.content.appendChild( add )
+// 	modal.content.appendChild( join )
+// 	join.appendChild( slug )
+
+// 	document.body.appendChild( modal.ele )
+
+// })
+// content.appendChild( add_board )
 
 
 

@@ -69,18 +69,40 @@ class Board {
 		// DOM
 		this.build_tab()
 	}
+	// build_tab(){
+	// 	this.tab = document.createElement('div')
+	// 	this.tab.classList.add('button')
+	// 	this.tab.title = 'click to set active: ' + this.name
+	// 	this.tab.innerHTML = this.name || this.uuid.substr(0,4)
+	// 	this.tab.setAttribute('data-uuid', this.uuid )
+	// 	setTimeout(() => {
+	// 		this.tab.appendChild( this.build_arrow(1) )
+	// 		this.tab.appendChild( this.build_arrow(0) )			
+	// 	}, 200 )
+	// 	this.tab.addEventListener('click', e => {
+	// 		if( e.target.classList.contains('dir-arrow')) return
+	// 		BROKER.publish('BOARD_SET_ACTIVE', {
+	// 			uuid: this.uuid,
+	// 		})
+	// 	})
+	// }
 	build_tab(){
 		this.tab = document.createElement('div')
-		this.tab.classList.add('button')
+		this.tab.classList.add('tab')
+		this.button = document.createElement('div')
+		this.button.classList.add('button')
+		this.tab.appendChild( this.button )
 		this.tab.title = 'click to set active: ' + this.name
-		this.tab.innerHTML = this.name || this.uuid.substr(0,4)
+		this.button.innerHTML = this.name || this.uuid.substr(0,4)
 		this.tab.setAttribute('data-uuid', this.uuid )
 		setTimeout(() => {
 			this.tab.appendChild( this.build_arrow(1) )
 			this.tab.appendChild( this.build_arrow(0) )			
 		}, 200 )
-		this.tab.addEventListener('click', e => {
+		this.button.addEventListener('click', e => {
 			if( e.target.classList.contains('dir-arrow')) return
+			if( saving ) send_save()
+				// return hal('error', 'wait for save to complete..', 750 )
 			BROKER.publish('BOARD_SET_ACTIVE', {
 				uuid: this.uuid,
 			})
@@ -90,7 +112,7 @@ class Board {
 		const wrapper = document.createElement('div')
 		wrapper.innerHTML = dir ? '&uarr;' : '&darr;'
 		wrapper.setAttribute('data-dir', dir )
-		wrapper.classList.add('dir-arrow')
+		wrapper.classList.add('dir-arrow', ( dir ? 'up' : 'down') )
 		wrapper.addEventListener('click', move_tab )
 		return wrapper
 	}
@@ -113,7 +135,7 @@ const render_colors = board_data => {
 	if( board_data.fg_color ) scratch.style.color = board_data.fg_color
 	if( board_data.bg_color ) scratch.style['background-color'] = board_data.bg_color
 	if( board_data.tab_color ){
-		const btn = boards.querySelector('.button[data-uuid="' + board_data.uuid + '"]')
+		const btn = boards.querySelector('.tab[data-uuid="' + board_data.uuid + '"] .button')
 		if( btn ){
 			btn.style['background'] = board_data.tab_color //+ '99'
 		}
@@ -141,7 +163,7 @@ const move_tab = e => {
 
 	const shift = Number( dir ) ? 'down': 'up'
 
-	lib.shift_element( shift, tab, '.button', true )
+	lib.shift_element( shift, tab, '.tab', true )
 
 	BROKER.publish('SOCKET_SEND', {
 		type: 'save_index',
@@ -155,8 +177,8 @@ const build_index = () => {
 		account: [],
 		all: [],
 	}
-	for( const btn of priv.querySelectorAll('.button')) index.account.push( btn.getAttribute('data-uuid'))
-	for( const btn of invites.querySelectorAll('.button')) index.all.push( btn.getAttribute('data-uuid'))
+	for( const btn of priv.querySelectorAll('.tab')) index.account.push( btn.getAttribute('data-uuid'))
+	for( const btn of invites.querySelectorAll('.tab')) index.all.push( btn.getAttribute('data-uuid'))
 	return index
 }
 
@@ -413,16 +435,16 @@ const set_active = event => { // private or public
 
 	// validate
 	const board = BOARDS[ target_uuid ]
-	const btn = boards.querySelector('.button[data-uuid="' + target_uuid + '"]')
-	if( !btn || !board ){
+	const tab = boards.querySelector('.tab[data-uuid="' + target_uuid + '"]')
+	if( !tab || !board ){
 		console.log(`invalid set_active target_uuid ${ target_uuid } uuid ${ uuid } ls ${ ls } `)
 		return
 	}
 	// handle button
-	for( const b of boards.querySelectorAll('.button')){
+	for( const b of boards.querySelectorAll('.tab')){
 		b.classList.remove('active')
 	}
-	btn.classList.add('active')
+	tab.classList.add('active')
 
 	// fill content
 	scratch.value = board.content || '' // lib.generate_content( 50 )
@@ -591,7 +613,7 @@ const handle_board = event => {
 	}
 
 	// tab
-	const btn = boards.querySelector('.button[data-uuid="' + board.uuid + '"]')
+	const btn = boards.querySelector('.tab[data-uuid="' + board.uuid + '"] .button')
 	if( btn ){
 		btn.innerHTML = board.name
 	}
@@ -628,7 +650,7 @@ const sort_boards = () => {
 		const sorted = JSON.parse( USER._board_order )
 
 		// private
-		const suspended_priv = priv.querySelectorAll('.button')
+		const suspended_priv = priv.querySelectorAll('.tab')
 		for( const btn of suspended_priv ) btn.remove()
 		for( const uuid of sorted.account ){
 			for( const ele of suspended_priv ){
@@ -642,7 +664,7 @@ const sort_boards = () => {
 		}
 
 		// all
-		const suspended_all = invites.querySelectorAll('.button')
+		const suspended_all = invites.querySelectorAll('.tab')
 		for( const btn of suspended_all ) btn.remove()
 		for( const uuid of sorted.all ){
 			for( const ele of suspended_all ){
@@ -751,7 +773,8 @@ const pop_options_modal = event => {
 	}, board.is_public )
 
 	const expl = document.createElement('div')
-	const url = `${ config.PUBLIC_URL }/board/${ board.uuid }`
+	// const origin = config.WS_URL.match(/localhost/) ? 'localhost' : 'https://emu.oko.nyc'
+	const url = `https://emu.oko.nyc/board/${ board.uuid }`
 	expl.innerHTML = `share this board: <br><input value="${ url }">` // .substr(1,6)
 	expl.classList.add('board-share')
 	const input = expl.querySelector('input')
