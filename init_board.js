@@ -773,8 +773,8 @@ const pop_options_modal = event => {
 	}, board.is_public )
 
 	const expl = document.createElement('div')
-	// const origin = config.WS_URL.match(/localhost/) ? 'localhost' : 'https://emu.oko.nyc'
-	const url = `https://emu.oko.nyc/board/${ board.uuid }`
+	const origin = config.WS_URL.match(/emu.oko.nyc/) ? 'https://emu.oko.nyc' : '[unknown host]'
+	const url = `${ origin }/board/${ board.uuid }`
 	expl.innerHTML = `share this board: <br><input value="${ url }">` // .substr(1,6)
 	expl.classList.add('board-share')
 	const input = expl.querySelector('input')

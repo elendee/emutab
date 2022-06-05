@@ -47,11 +47,9 @@ pre{
 	font-family: monospace;
     padding: 10px;
 	border: 0px;
+	position: fixed;
 	bottom: 0px;
 	right: 0px;
-	position: fixed;
-	z-index: 9;
-	border-left: 1px solid black;
 }
 
 #scratchpad:focus{
@@ -176,22 +174,24 @@ pre{
 
 #boards{
 	position: relative;
-/* 	z-index: 9; */
-	width: 210px;
+	z-index: 9;
+/* 	display: inline-block; */
+	width: 230px;
 	color: #f1d4a1;
 	padding: 0 5px;
 	height: calc( 100vh - 120px);
 	overflow-y: auto;
 	overflow-x: hidden;
+/* 	background: rgba(255, 255, 255, .1) */
 }
-#boards:hover{
-	z-index: 99;
-}
+
 #boards .button{
 	white-space: nowrap;
+	max-width: 76px;
 	font-weight: initial;
 	opacity: 1;
 }
+
 #boards .tab{
 	position: relative;
 }
@@ -208,20 +208,22 @@ pre{
 }
 .dir-arrow{
 	position: absolute;
+/* 	top:  0; */
 	background: black;
 	font-size:  1.2rem;
 	padding:  0px 8px 4px 8px;
 	font-weight:  bold;
-	vertical-align: top;
 	cursor: pointer;
-
+/* 	float: right; */
+	
 	display: none;
+	vertical-align: top;
 }
 .dir-arrow.down{
-	right: 30px;
+	right: 40px;
 }
 .dir-arrow.up{
-	right: 0px;
+	right: 10px;
 }
 .tab:hover .dir-arrow{
 	display:  inline-block;
