@@ -18,7 +18,7 @@ import {
 import BROKER from './EventBroker.js?v=22'
 import USER from './USER.js?v=22'
 import GLOBAL from './GLOBAL.js?v=22'
-
+import pop_options_modal from './board_settings.js?v=22'
 
 
 
@@ -328,56 +328,6 @@ scratch.addEventListener('keydown', e => {
 // DOM builders
 // --------------------------------------------------------------------------------------------------------------------------------------------
 
-const build_add_users = container => {
-	/*
-		add 'users who can edit' form for modal
-	*/
-	const wrapper = document.createElement('div')
-	wrapper.classList.add('add-users')
-	const input = document.createElement('input')
-	input.placeholder = 'enter a user handle or email'
-	container.appendChild( wrapper)
-}
-
-const build_edit_field = ( type, label, cb, start_value ) => {
-	const wrapper = document.createElement('div')
-	wrapper.classList.add('field-wrapper')
-	const label_ele = document.createElement('label')
-	label_ele.classList.add('field-label')
-	label_ele.innerHTML = label
-	const input = document.createElement('input')
-	input.name = label // not used for database
-	input.type = type
-	if( type === 'checkbox'){
-		input.checked = start_value
-	}else{
-		input.value = start_value
-	}
-	input.addEventListener('change', cb )
-	wrapper.appendChild( label_ele )
-	wrapper.appendChild( input )
-	return wrapper
-}
-
-const build_user_icon = user => {
-	const wrapper = document.createElement('div')
-	wrapper.classList.add('user-icon')
-	wrapper.innerHTML = `<span style='color: ${ user?.color || 'lightgrey' }'>${ user?.handle || '(invalid user name)' }</span>`
-	return wrapper
-}
-
-const build_anchor_icon = anchor => {
-	const wrapper = document.createElement('div')
-	wrapper.classList.add('column', 'anchor')
-	wrapper.title = 'created: ' + new Date( anchor._created ).toLocaleString() + '\nclick to preview'
-	wrapper.innerHTML = '<img src="/resource/media/anchor.png">'
-	wrapper.addEventListener('click', preview_anchor )
-	wrapper.setAttribute('data-uuid', anchor.uuid )
-	return wrapper
-}
-
-
-
 
 
 
@@ -560,7 +510,7 @@ const handle_board = event => {
 
 	const { board, user_uuid } = event
 
-	console.log( event )
+	// console.log( event )
 
 	// validate
 	if( typeof board.uuid !== 'string' ){
@@ -697,226 +647,71 @@ const handle_attendance = event => {
 
 
 
-const pop_options_modal = event => {
-	/*
-		edit all Board options
-		board does not technically need to exist in BOARDS but it probably cant hurt
-	*/
-
-	const { board, allowed_users, online_users, anchors } = event
-
-	console.log( 'modal: ', event )
-
-	const modal = new Modal({
-		type: 'board_options',
-	})
-	modal.make_columns()
-	modal.ele.setAttribute('data-board-uuid', board.uuid )
-
-	const header = document.createElement('h3')
-	header.innerHTML = 'board options: ' + board.name
-	modal.content.prepend( header )
-
-	// online users
-	const online_label = document.createElement('div')
-	online_label.classList.add('field-label')
-	online_label.innerHTML = 'online users:'
-	const online = document.createElement('div')
-	online.classList.add( 'online-users' )
-	for( const user of online_users ){
-		const u = build_user_icon( user )
-		online.appendChild( u )
-	}
-	modal.right_panel.appendChild( online_label )
-	modal.right_panel.appendChild( online )
-
-	// permitted users
-	const user_head = document.createElement('div')
-	user_head.innerHTML = '<span class="field-label">users who can edit:</span>'
-	modal.right_panel.appendChild( user_head )
-	const user_list = document.createElement('div')
-	user_list.classList.add('allowed-users')
-	for( const user of ( allowed_users || [] ) ){
-		user_list.appendChild( build_user_icon( user ))
-	}
-	modal.right_panel.appendChild( user_list )
-	user_list.innerHTML = '(in development - boards are either public or private for now)'
-
-	/* 
-		finish later:
-		build_add_users( modal.right_panel )
-	*/
-
-	// change name
-	const edit_name = build_edit_field('text', 'name', ()=> {
-		BROKER.publish('SOCKET_SEND', {
-			type: 'board_set_option',
-			uuid: board.uuid,
-			option: 'name',
-			state: edit_name.querySelector('input').value.trim(),
-		})		
-	}, board.name )
-	modal.left_panel.appendChild( edit_name )
-
-	// public / private
-	const pubtoggle = build_edit_field('checkbox', 'is public', () => {
-
-		const is_public = pubtoggle.querySelector('input').checked
-
-		BROKER.publish('SOCKET_SEND', {
-			type: 'board_set_option',
-			uuid: board.uuid,
-			option: 'is_public',
-			state: is_public,
-		})
-
-	}, board.is_public )
-
-	const expl = document.createElement('div')
-	const origin = config.WS_URL.match(/emu.oko.nyc/) ? 'https://emu.oko.nyc' : '[unknown host]'
-	const url = `${ origin }/board/${ board.uuid }`
-	expl.innerHTML = `share this board: <br><input value="${ url }">` // .substr(1,6)
-	expl.classList.add('board-share')
-	const input = expl.querySelector('input')
-	input.addEventListener('keyup', e => {
-		input.value = url	
-	})
-	input.addEventListener('change', e => {
-		input.value = url	
-	})
-	expl.onclick = () => {
-		setTimeout(()  => {
-			expl.querySelector('input').select()
-		}, 100 )
-	}
-	pubtoggle.appendChild( expl )
-	modal.left_panel.appendChild( pubtoggle )
-
-	// show public setting on load
-	reflect_public_url( pubtoggle, board )
-
-	// colors
-	const board_colors = document.createElement('div')
-	board_colors.classList.add('board-colors')
-	const fg_color = build_edit_field('color', 'foreground', () => {
-		BROKER.publish('SOCKET_SEND', {
-			type: 'board_set_option',
-			uuid: board.uuid,
-			option: 'fg_color',
-			state: fg_color.querySelector('input').value,
-		})
-	})
-	board_colors.appendChild( fg_color )
-	fg_color.querySelector('input').value = board.fg_color 
-	const bg_color = build_edit_field('color', 'background', () => {
-		BROKER.publish('SOCKET_SEND', {
-			type: 'board_set_option',
-			uuid: board.uuid,
-			option: 'bg_color',
-			state: bg_color.querySelector('input').value,
-		})
-	})
-	board_colors.appendChild( bg_color )
-	bg_color.querySelector('input').value = board.bg_color 
-	const tab_color = build_edit_field('color', 'tab', () => {
-		BROKER.publish('SOCKET_SEND', {
-			type: 'board_set_option',
-			uuid: board.uuid,
-			option: 'tab_color',
-			state: tab_color.querySelector('input').value,
-		})
-	})
-	board_colors.appendChild( tab_color )
-	tab_color.querySelector('input').value = board.tab_color 
-	modal.left_panel.appendChild( board_colors )
-
-	// anchors
-	const anchor_wrap = document.createElement('div')
-	anchor_wrap.classList.add('anchor-wrap')
-	const anchor_label = document.createElement('div')
-	anchor_label.classList.add('field-label', 'field-wrapper')
-	anchor_label.innerHTML = 'anchors'
-	anchor_wrap.appendChild( anchor_label )
-	const anchor_icons = document.createElement('div')
-	if( anchors ){
-		for( const uuid in anchors ){
-			anchor_icons.appendChild( build_anchor_icon( anchors[uuid] ) )
-		}		
-	}else{
-		anchor_icons.innerHTML = '(none)'
-	}
-	anchor_wrap.appendChild( anchor_icons )
-	modal.left_panel.appendChild( anchor_wrap )
-
-	// append
-	content.appendChild( modal.ele )
-
-}
 
 
-const reflect_public_url = ( share_ele, board ) => {
-	// console.log('?', share_ele )
-	const share = share_ele.querySelector('.board-share')
-	share.style.display = board.is_public ? 'block' : 'none'
-}
+// const reflect_public_url = ( share_ele, board ) => {
+// 	// console.log('?', share_ele )
+// 	const share = share_ele.querySelector('.board-share')
+// 	share.style.display = board.is_public ? 'block' : 'none'
+// }
 
-const reflect_value = ( key, wrapper, board ) => {
-	const input = wrapper.querySelector('input[' + key + '="' + board[ key ] + '"]')
-	if( input ) input.value = board[ key ]
-}
-
-
-const reflect_options = event => {
-
-	console.log('deprecated', event )
-
-	// const { board, allowed_users } = event
-
-	// // console.log( event )
-	// const active = get_active_board()
-
-	// const is_editing = document.querySelector('.modal[data-board-uuid="' + board?.uuid + '"]')
-
-	// if( is_editing ){
-
-	// 	// admin ripples
-	// 	hal('success', 'board options updated', 3000)
-	// 	// url
-	// 	const wrapper = document.querySelector('.modal .board-share').parentElement
-	// 	if( wrapper ){
-	// 		reflect_public_url( wrapper, board )
-	// 		reflect_value( 'name', wrapper, board )
-	// 	}else{
-	// 		console.log('missing public/private wrapper')
-	// 	}
-
-	// }else{
-	// 	// users who happen to be on the board when its edited
-	// 	// hal('standard', 'board options updated', 3000)
-
-	// }
-
-	// // board name
-	// const btn = boards.querySelector('.button[data-uuid="' + board.uuid + '"]')
-	// if( btn ) btn.innerText = board.name
-
-	// // board public
-	// if( BOARDS[ board.uuid ].is_public !== board.is_public ){
-	// 	hal('standard', board.name + ' is now ' + ( board.is_public ? 'public' : 'private' ) , 10 * 1000 )
-	// }
-
-	// // colors
-	// // if( active === board.uuid ){
-	// render_colors( board )
-	// // }
-
-	// if( Array.isArray( allowed_users ) ){
-	// 	// user list needs to be rendered separately probably
-	// 	console.log('awaiting allowed users', allowed_users )		
-	// }
+// const reflect_value = ( key, wrapper, board ) => {
+// 	const input = wrapper.querySelector('input[' + key + '="' + board[ key ] + '"]')
+// 	if( input ) input.value = board[ key ]
+// }
 
 
-}
+// const reflect_options = event => {
+
+// 	console.log('deprecated', event )
+
+// 	// const { board, allowed_users } = event
+
+// 	// // console.log( event )
+// 	// const active = get_active_board()
+
+// 	// const is_editing = document.querySelector('.modal[data-board-uuid="' + board?.uuid + '"]')
+
+// 	// if( is_editing ){
+
+// 	// 	// admin ripples
+// 	// 	hal('success', 'board options updated', 3000)
+// 	// 	// url
+// 	// 	const wrapper = document.querySelector('.modal .board-share').parentElement
+// 	// 	if( wrapper ){
+// 	// 		reflect_public_url( wrapper, board )
+// 	// 		reflect_value( 'name', wrapper, board )
+// 	// 	}else{
+// 	// 		console.log('missing public/private wrapper')
+// 	// 	}
+
+// 	// }else{
+// 	// 	// users who happen to be on the board when its edited
+// 	// 	// hal('standard', 'board options updated', 3000)
+
+// 	// }
+
+// 	// // board name
+// 	// const btn = boards.querySelector('.button[data-uuid="' + board.uuid + '"]')
+// 	// if( btn ) btn.innerText = board.name
+
+// 	// // board public
+// 	// if( BOARDS[ board.uuid ].is_public !== board.is_public ){
+// 	// 	hal('standard', board.name + ' is now ' + ( board.is_public ? 'public' : 'private' ) , 10 * 1000 )
+// 	// }
+
+// 	// // colors
+// 	// // if( active === board.uuid ){
+// 	// render_colors( board )
+// 	// // }
+
+// 	// if( Array.isArray( allowed_users ) ){
+// 	// 	// user list needs to be rendered separately probably
+// 	// 	console.log('awaiting allowed users', allowed_users )		
+// 	// }
+
+
+// }
 
 
 
@@ -1005,6 +800,30 @@ const init_complete = event => {
 
 }
 
+const remove_board = event => {
+	const { uuid, subtype, name } = event
+
+	const board = BOARDS[ uuid ]
+	if( !board ){ // this WILL happen usually because it removes with 'board.close()'
+		// 
+	}
+
+	// close modal
+	const modal = document.querySelector('.modal.board_options')
+	if( modal ){
+		modal.querySelector('.modal-close').click()
+	}
+
+	// clear textarea
+	if( get_active_board() === uuid ) scratch.value = ''
+
+	// remove from menu
+	const btn = boards.querySelector('.tab[data-uuid="' + uuid + '"]')
+	if( btn ) btn.remove()
+
+	hal('success', ( subtype === 'leave' ? 'left' : 'deleted' ) + ' board: ' + name, 4000 )
+
+}
 
 
 
@@ -1127,6 +946,7 @@ BROKER.subscribe('BOARD_SAVE', save )
 BROKER.subscribe('BOARD_PONG_BOARD', handle_board )
 BROKER.subscribe('BOARD_ATTENDANCE', handle_attendance )
 BROKER.subscribe('BOARD_OPTIONS', pop_options_modal )
+BROKER.subscribe('BOARD_REMOVED', remove_board )
 // BROKER.subscribe('BOARD_REFLECT', reflect_options )
 BROKER.subscribe('BOARD_PONG_ANCHOR', pong_anchor )
 BROKER.subscribe('BOARD_TOUCH', board_touch )
