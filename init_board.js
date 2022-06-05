@@ -494,6 +494,26 @@ const set_locked = e => {
 	set_toggle( e, 'is_locked')
 }
 
+// stagger handle-board responses to avoid drowning the screen
+let staggering = false
+let staggered_boards = []
+const stagger_success = board => {
+	staggered_boards.push( board )
+	if( staggering ) return
+	staggering = setTimeout(() => {
+		let msg
+		if( staggered_boards.length > 1 ){
+			msg = staggered_boards.length + ' boards updated'
+		}else{
+			msg = 'board updated: ' + staggered_boards[0].name
+		}
+		hal('success', msg, GLOBAL.BOARDS.SAVE_INTERVAL * 1.5 )
+		staggered_boards.length = 0
+		clearTimeout( staggering )
+		staggering = false
+	}, 1000 )
+}
+
 
 
 
@@ -661,7 +681,7 @@ const handle_board = event => {
 		const msg = user_uuid === USER.uuid ? 'saved' : 'edited by ' + user.handle
 		hal('success', msg, 4000 )
 	}else{
-		hal('success', 'board updated: ' + b.name, 4000 )
+		stagger_success( b )
 	}
 
 	if( USER._board_order ){
