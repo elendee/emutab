@@ -107,6 +107,38 @@ class Board {
 				uuid: this.uuid,
 			})
 		})
+
+		// eye icon
+		const is_priv = this.is_priv = document.createElement('div')
+		is_priv.classList.add('tab-toggle', 'private')
+		// is_priv.innerHTML = '<img src="/resource/media/eye.svg">'
+		const img_priv = this.img_priv = document.createElement('img')
+		img_priv.src = '/resource/media/eye.png'
+		is_priv.appendChild( img_priv )
+		is_priv.addEventListener('click', set_public )
+		this.tab.prepend( is_priv )
+
+		// lock icon
+		const is_lock = this.is_lock = document.createElement('div')
+		is_lock.classList.add('tab-toggle', 'public')
+		// is_lock.innerHTML = '<img src="/resource/media/lock.png">'
+		const img_lock = this.img_lock = document.createElement('img')
+		img_lock.src = '/resource/media/pencil.png'
+		is_lock.appendChild( img_lock )
+		is_lock.addEventListener('click', set_locked )
+		this.tab.prepend( is_lock )
+
+		// const is_priv = this.is_priv = document.createElement('div')
+		// is_priv.classList.add('tab-toggle', 'private')
+		// is_priv.innerHTML = '<img src="/resource/media/eye.svg">'
+		// is_priv.addEventListener('click', set_public )
+		// this.tab.prepend( is_priv )
+		// const is_lock = this.is_lock = document.createElement('div')
+		// is_lock.classList.add('tab-toggle', 'public')
+		// // is_lock.innerHTML = '<img src="/resource/media/pencil.png">'
+		// is_lock.innerHTML = '<img src="/resource/media/lock.png">'
+		// is_lock.addEventListener('click', set_locked )
+		// this.tab.prepend( is_lock )
 	}
 	build_arrow( dir ){
 		const wrapper = document.createElement('div')
@@ -434,7 +466,33 @@ const save = event => {
 
 }
 
+const set_toggle = ( e, option )  => {
+	const toggle = e.target.classList.contains('tab-toggle') ? e.target : e.target.parentElement
+	const tab = toggle.parentElement
+	// toggle.classList.contains('.tab') ? e.target.parentElement : e.target.parentElement.parentElement
+	let state = !toggle.classList.contains('checked')
+	if( option === 'is_private' ){
+		state = !state
+	}
+	const packet = {
+		type: 'board_set_option',
+		uuid: tab.getAttribute('data-uuid'),
+		option: option,
+		state: state,
+	}
+	console.log('sending state: ', packet )
 
+	BROKER.publish('SOCKET_SEND', packet)
+
+	toggle.classList.toggle('checked')
+}
+
+const set_public = e => {
+	set_toggle( e, 'is_private')
+}
+const set_locked = e => {
+	set_toggle( e, 'is_locked')
+}
 
 
 
@@ -561,6 +619,27 @@ const handle_board = event => {
 		b.tab.click()
 
 	}
+
+	// render private / locked
+	if( board.is_private ){
+		b.is_priv.classList.remove('checked')
+		b.is_priv.title = 'board is private - only the owner may view'
+		b.img_priv.src = '/resource/media/eye-closed.png'
+	}else{
+		b.is_priv.classList.add('checked')
+		b.is_priv.title = 'board is public - anyone with the URL may view'
+		b.img_priv.src = '/resource/media/eye.png'
+	}
+	b.is_private = board.is_private
+
+	if( board.is_locked ){
+		b.is_lock.title = 'board is locked - only the owner may edit'
+		b.is_lock.classList.add('checked')
+	}else{
+		b.is_lock.classList.remove('checked')
+		b.is_lock.title = 'board is open - anyone with the URL may edit'
+	}
+	b.is_locked = board.is_locked
 
 	// tab
 	const btn = boards.querySelector('.tab[data-uuid="' + board.uuid + '"] .button')

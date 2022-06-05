@@ -177,23 +177,29 @@ pre{
 #boards{
 	position: relative;
 /* 	z-index: 9; */
-	width: 210px;
+	width: 225px;
 	color: #f1d4a1;
 	padding: 0 5px;
-	height: calc( 100vh - 120px);
+	height: calc( 100vh - 90px);
 	overflow-y: auto;
 	overflow-x: hidden;
 }
 #boards:hover{
-	z-index: 99;
+	/*z-index: 99;*/
 }
 #boards .button{
 	white-space: nowrap;
 	font-weight: initial;
 	opacity: 1;
+	padding: 1px 6px;
+	box-shadow: 0px 0px;
 }
 #boards .tab{
 	position: relative;
+	white-space: nowrap;
+}
+.tab.active{
+	background: rgba(255, 255, 255, .1)
 }
 #boards .button:hover{
 	max-width: 999%;
@@ -214,6 +220,7 @@ pre{
 	font-weight:  bold;
 	vertical-align: top;
 	cursor: pointer;
+	top:  0px;
 
 	display: none;
 }
@@ -461,6 +468,35 @@ span.board-touch{
 
 .modal .delete{
 	margin-top: 30px;
+}
+
+.tab-toggle{
+	display: inline-block;
+	vertical-align: top;
+	padding: 2px;
+	width: 17px;
+	cursor: pointer;
+/* 	background: rgba(205, 35, 0, .2); */
+}
+.tab-toggle:hover,
+.tab-toggle.checked:hover{
+	background: rgba(255, 255, 255, .4);
+}
+.tab-toggle.private{
+	background: rgba(85, 105, 70, .5);
+}
+.tab-toggle.public{
+	background: rgba(85, 125, 200, .3);
+}
+.tab-toggle.checked.private{
+	background: rgba(105, 135, 100, .9);
+/* 	background: rgba(155, 255, 155, .3); */
+}
+.tab-toggle.checked.public{
+	background: rgba(85, 125, 200, .9);
+}
+.tab-toggle img{
+	width: 100%;
 }
 
 @media screen and (max-width: 800px){

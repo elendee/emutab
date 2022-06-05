@@ -321,6 +321,55 @@ const shift_element = window.shift_element = ( dir, ele, identifier, cycle ) => 
 
 
 
+const is_hex_color = color => {
+	return ( typeof color === 'string' && !color.match(/[g-z]/i) && color.length >= 6 && color.length <= 9 )
+}
+
+const char_map = {
+	a: 10,
+	b: 11,
+	c: 12,
+	d: 13,
+	e: 14,
+	f: 15,
+}
+
+const offset_color = ( color, contrast ) => {
+	if( !is_hex_color( color )){
+		console.log('invalid hex color: ', color )
+		return contrast ? '#000000' : '#222222'
+	}
+
+	let c = color.replace('#', '').substr(0,6)
+
+	let needs_black = false
+
+	let sum = 0
+	for( let i = 0; i < c.length; i++ ){
+		const n = Number( c[i] )
+		if( typeof n === 'number' && !isNaN( n ) ){
+			sum += n
+		}else if( char_map[ c[i] ]){
+			needs_black = true
+			sum += char_map[ c[i] ]
+		}else{
+			console.log('invalid num', n )
+		}
+	}
+
+	if( needs_black ){
+	// if( sum > 30 ){
+		return contrast ? '#000000' : '#222222'
+	}else{
+		return contrast ? '#ffffff' : '#dddddd'
+	}
+
+}
+
+
+
+
+
 
 
 export {
@@ -353,4 +402,6 @@ export {
 	generate_content,
 	get_index,
 	shift_element,
+	offset_color,
+	is_hex_color,
 }
