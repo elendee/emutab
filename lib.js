@@ -1,5 +1,5 @@
-import hal from './hal.js?v=22'
-import GLOBAL from './GLOBAL.js?v=22'
+import hal from './hal.js?v=39'
+import GLOBAL from './GLOBAL.js?v=39'
 
 
 
@@ -321,6 +321,7 @@ const shift_element = window.shift_element = ( dir, ele, identifier, cycle ) => 
 
 
 
+
 const is_hex_color = color => {
 	return ( typeof color === 'string' && !color.match(/[g-z]/i) && color.length >= 6 && color.length <= 9 )
 }
@@ -342,29 +343,50 @@ const offset_color = ( color, contrast ) => {
 
 	let c = color.replace('#', '').substr(0,6)
 
-	let needs_black = false
+	// console.log('testing bg color: ', color, c )
 
-	let sum = 0
+	let num
+	const rgb = {r: 0, g: 0, b: 0}
 	for( let i = 0; i < c.length; i++ ){
+
 		const n = Number( c[i] )
+
 		if( typeof n === 'number' && !isNaN( n ) ){
-			sum += n
+			num = n
 		}else if( char_map[ c[i] ]){
-			needs_black = true
-			sum += char_map[ c[i] ]
+			num = char_map[ c[i] ]
 		}else{
-			console.log('invalid num', n )
+			num = 0
+			// console.log('invalid num', n )
 		}
+
+		// console.log(`adding index ${ i } color: ${ num }`)
+
+		if( i < 2 ){ // red
+			rgb.r += ( i === 0 ) ? num * 16 : num
+		}else if( i < 4 ){ // green
+			rgb.g += ( i === 2 ) ? num * 16 : num
+		}else{ // blue
+			rgb.b += ( i === 4 ) ? num * 16 : num
+		}
+
 	}
 
-	if( needs_black ){
-	// if( sum > 30 ){
+	// console.log(`rgb res:`, rgb )
+
+	// https://stackoverflow.com/questions/3942878/how-to-decide-font-color-in-white-or-black-depending-on-background-color
+	const computed = ( rgb.r * .299 ) + ( rgb.g * .587 ) + ( rgb.b * .114 )
+
+	// console.log('computed bg value: ', computed )
+
+	if( computed > 150 ){ // 186 standard
 		return contrast ? '#000000' : '#222222'
 	}else{
 		return contrast ? '#ffffff' : '#dddddd'
 	}
 
 }
+
 
 
 

@@ -1,8 +1,8 @@
-import config from './config.js?v=22'
+import config from './config.js?v=39'
 
-// import GLOBAL from './GLOBAL.js?v=22'
-// import hal from './hal.js?v=22'
-import BROKER from './EventBroker.js?v=22'
+// import GLOBAL from './GLOBAL.js?v=39'
+// import hal from './hal.js?v=39'
+import BROKER from './EventBroker.js?v=39'
 
 
 

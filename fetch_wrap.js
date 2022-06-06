@@ -1,4 +1,4 @@
-import ui from './ui.js?v=22'
+import ui from './ui.js?v=39'
 
 export default async( url, method, body, no_spinner ) => {
 	/*

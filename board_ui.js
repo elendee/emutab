@@ -1,16 +1,16 @@
-import config from './config.js?v=22'
-import BROKER from './EventBroker.js?v=22'
-// import config from './config.js?v=22'
-import hal from './hal.js?v=22'
+import config from './config.js?v=39'
+import BROKER from './EventBroker.js?v=39'
+// import config from './config.js?v=39'
+import hal from './hal.js?v=39'
 import {
 	is_emu_uuid,
 	parse_slug,
 	random_hex,
-} from './lib.js?v=22'
-import fetch_wrap from './fetch_wrap.js?v=22'
-import USER from './USER.js?v=22'
-import GLOBAL from './GLOBAL.js?v=22'
-import { Modal } from './Modal.js?v=22'
+} from './lib.js?v=39'
+import fetch_wrap from './fetch_wrap.js?v=39'
+import USER from './USER.js?v=39'
+import GLOBAL from './GLOBAL.js?v=39'
+import { Modal } from './Modal.js?v=39'
 
 
 

@@ -1,12 +1,12 @@
-// import config from './config.js?v=22'
-import WS from './WS.js?v=22'
-import hal from './hal.js?v=22'
-// import fetch_wrap from './fetch_wrap.js?v=22'
-import * as lib from './lib.js?v=22'
-import ui from './ui.js?v=22'
+// import config from './config.js?v=39'
+import WS from './WS.js?v=39'
+import hal from './hal.js?v=39'
+// import fetch_wrap from './fetch_wrap.js?v=39'
+import * as lib from './lib.js?v=39'
+import ui from './ui.js?v=39'
 // import {
 // 	Modal,
-// } from './Modal.js?v=22'
+// } from './Modal.js?v=39'
 import {
 	boards,
 	scratch,
@@ -14,11 +14,11 @@ import {
 	invites,// public boards wrapper
 	line_place,
 	line_total,
-} from  './board_ui.js?v=22' 
-import BROKER from './EventBroker.js?v=22'
-import USER from './USER.js?v=22'
-import GLOBAL from './GLOBAL.js?v=22'
-import pop_options_modal from './board_settings.js?v=22'
+} from  './board_ui.js?v=39' 
+import BROKER from './EventBroker.js?v=39'
+import USER from './USER.js?v=39'
+import GLOBAL from './GLOBAL.js?v=39'
+import pop_options_modal from './board_settings.js?v=39'
 
 
 
@@ -164,15 +164,46 @@ class User {
 
 
 const render_colors = board_data => {
-	if( board_data.fg_color ) scratch.style.color = board_data.fg_color
-	if( board_data.bg_color ) scratch.style['background-color'] = board_data.bg_color
+
+	if( !board_data ){
+		scratch.style.color = '#96fa96'
+		scratch.style.background = '#232323'
+		return
+	}
+
+	// scratch colors
+	if( get_active_board() === board_data?.uuid ){
+		if( board_data.fg_color ) scratch.style.color = board_data.fg_color
+		if( board_data.bg_color ) scratch.style['background-color'] = board_data.bg_color		
+	}
+	// tab colors
 	if( board_data.tab_color ){
-		const btn = boards.querySelector('.tab[data-uuid="' + board_data.uuid + '"] .button')
+		const selector = '.button'
+		const tab = boards.querySelector('.tab[data-uuid="' + board_data.uuid + '"]')
+		const btn = tab.querySelector( selector )
 		if( btn ){
 			btn.style['background'] = board_data.tab_color //+ '99'
+			console.log(`testing ${ board_data.name }`)
+			const c = lib.offset_color( board_data.tab_color, true )
+			// console.log('renderd : ', c )
+			btn.style.color = c
+		}else{
+			console.log('invalid button', tab, btn )
 		}
 	}
 }
+
+
+// const render_colors = board_data => {
+// 	if( board_data.fg_color ) scratch.style.color = board_data.fg_color
+// 	if( board_data.bg_color ) scratch.style['background-color'] = board_data.bg_color
+// 	if( board_data.tab_color ){
+// 		const btn = boards.querySelector('.tab[data-uuid="' + board_data.uuid + '"] .button')
+// 		if( btn ){
+// 			btn.style['background'] = board_data.tab_color //+ '99'
+// 		}
+// 	}
+// }
 
 
 const update_line = e => {
@@ -403,47 +434,46 @@ const preview_anchor = e => {
 
 }
 
+
+
 const set_active = event => { // private or public
 
-	console.log( 'set active', event )
+	console.log( 'set-active', event )
 
 	event = event || {}
 
 	const { uuid, skip_state } = event
 
-	// set target uuid; default to localStorage uuid
-	let target_uuid = uuid
-	if( !uuid ){
-		console.log('setting active from localStorage') 
-		target_uuid = localStorage.getItem('emu-active-tab')
-	}
-
-	// validate
-	const board = BOARDS[ target_uuid ]
-	const tab = boards.querySelector('.tab[data-uuid="' + target_uuid + '"]')
-	if( !tab || !board ){
-		console.log(`invalid set_active target_uuid ${ target_uuid } uuid ${ uuid } ls ${ ls } `)
-		return
-	}
 	// handle button
 	for( const b of boards.querySelectorAll('.tab')){
 		b.classList.remove('active')
 	}
-	tab.classList.add('active')
 
-	// fill content
-	scratch.value = board.content || '' // lib.generate_content( 50 )
+	if( !uuid ){ // leave / set empty
 
-	// colors
-	render_colors( board )
+		scratch.value = ''
 
-	// remember
-	localStorage.setItem('emu-active-tab', target_uuid )
+		render_colors()
+		delete localStorage['emu-active-tab']
 
-	// if( !skip_state ) window.history.pushState( {}, '', '/board/' + target_uuid );
+	}else{
+
+		// validate
+		const board = BOARDS[ uuid ]
+		const btn = boards.querySelector('.tab[data-uuid="' + uuid + '"]')
+		if( !btn || !board ){
+			console.log(`invalid set-active target-uuid (${ uuid }) uuid (${ uuid })`)
+			return
+		}		
+		btn.classList.add('active')
+		scratch.value = board.content
+
+		render_colors( board )
+		localStorage.setItem('emu-active-tab', uuid )
+
+	}
 
 }
-
 
 
 const save = event => {
@@ -657,9 +687,9 @@ const handle_board = event => {
 
 	if( board.is_locked ){
 		b.is_lock.title = 'board is locked - only the owner may edit'
-		b.is_lock.classList.add('checked')
-	}else{
 		b.is_lock.classList.remove('checked')
+	}else{
+		b.is_lock.classList.add('checked')
 		b.is_lock.title = 'board is open - anyone with the URL may edit'
 	}
 	b.is_locked = board.is_locked
@@ -904,10 +934,13 @@ const pong_anchor = event => {
 const init_complete = event => {
 	// const {  } = event
 
+	// if( !get_active_board() ){
+	// 	scratch.value = ''
+	// }
 
-	if( !get_active_board() ){
-		scratch.value = ''
-	}
+	set_active({ 
+		uuid: localStorage.getItem('emu-active-tab'),
+	})
 
 	initialized_boards = true
 	initializing_boards = false
