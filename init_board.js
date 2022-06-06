@@ -1,12 +1,12 @@
-import config from './config.js?v=22'
+// import config from './config.js?v=22'
 import WS from './WS.js?v=22'
 import hal from './hal.js?v=22'
-import fetch_wrap from './fetch_wrap.js?v=22'
+// import fetch_wrap from './fetch_wrap.js?v=22'
 import * as lib from './lib.js?v=22'
 import ui from './ui.js?v=22'
-import {
-	Modal,
-} from './Modal.js?v=22'
+// import {
+// 	Modal,
+// } from './Modal.js?v=22'
 import {
 	boards,
 	scratch,
@@ -197,10 +197,13 @@ const move_tab = e => {
 
 	lib.shift_element( shift, tab, '.tab', true )
 
-	BROKER.publish('SOCKET_SEND', {
-		type: 'save_index',
-		index: build_index(),
-	})
+	setTimeout(() => { // idk what it is about DOM operations...
+		BROKER.publish('SOCKET_SEND', {
+			type: 'save_index',
+			index: build_index(),
+		})		
+	}, 100 )
+
 
 }
 
@@ -684,15 +687,27 @@ const handle_board = event => {
 		stagger_success( b )
 	}
 
-	if( USER._board_order ){
-		sort_boards()
+	// sort
+	if( USER._board_order && !awaiting_sort ){
+		awaiting_sort = setTimeout(() => {
+			sort_boards()
+			awaiting_sort = false
+		}, 500 )
 	}
+	// if( USER._board_order ){
+	// 	sort_boards()
+	// }
 
 }
 
 
-
+let awaiting_sort = false
 const sort_boards = () => {
+
+	// console.log('sorting: ', USER._board_order )
+	// console.log('sorting: ', USER._board_order ? JSON.parse( USER._board_order ).account.map( uuid => { 
+	// 	return BOARDS[ uuid ]?.name || '(no name)'
+	// } ) : '' )
 
 	try{
 
@@ -913,8 +928,12 @@ const remove_board = event => {
 		modal.querySelector('.modal-close').click()
 	}
 
-	// clear textarea
-	if( get_active_board() === uuid ) scratch.value = ''
+	// clear textarea / styles
+	if( get_active_board() === uuid ){
+		scratch.value = ''
+		delete scratch.style.background
+		delete scratch.style.color
+	}
 
 	// remove from menu
 	const btn = boards.querySelector('.tab[data-uuid="' + uuid + '"]')
@@ -924,7 +943,16 @@ const remove_board = event => {
 
 }
 
+const user_propagate = event => {
+	const { user } = event
 
+	console.log('propagating: ', user )
+
+	for( const field in user ){
+		USER[ field ] = user[ field ]
+	}
+
+}
 
 
 
@@ -1050,3 +1078,4 @@ BROKER.subscribe('BOARD_REMOVED', remove_board )
 BROKER.subscribe('BOARD_PONG_ANCHOR', pong_anchor )
 BROKER.subscribe('BOARD_TOUCH', board_touch )
 BROKER.subscribe('BOARDS_INIT_COMPLETE', init_complete )
+BROKER.subscribe('USER_PROPAGATE', user_propagate )

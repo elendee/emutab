@@ -5,6 +5,14 @@ import BROKER from './EventBroker.js?v=22'
 
 
 
+
+
+
+
+// --------------------------
+// builders
+// --------------------------
+
 const build_user_icon = user => {
 	const wrapper = document.createElement('div')
 	wrapper.classList.add('user-icon')
@@ -60,6 +68,28 @@ const build_edit_field = ( type, label, cb, start_value ) => {
 
 
 
+
+
+
+// --------------------------
+// client callbacks
+// --------------------------
+
+const preview_anchor = e => {
+	let anchor
+	if( e.target.classList.contains('anchor')){
+		anchor = e.target
+	}else{
+		anchor = e.target.parentElement
+	}
+	const uuid = anchor.getAttribute('data-uuid')
+	BROKER.publish('SOCKET_SEND', {
+		type: 'ping_anchor',
+		uuid: uuid,
+		board_uuid: get_active_board(),
+	})
+
+}
 
 
 const pop_options_modal = event => {

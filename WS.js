@@ -106,6 +106,10 @@ const init = () => {
 				BROKER.publish('BOARD_REMOVED', packet )
 				break;
 
+			case 'user_propagate':
+				BROKER.publish('USER_PROPAGATE', packet )
+				break;
+
 			// case 'chat':
 			// 	BROKER.publish('ROOM_HANDLE_CHAT', packet )
 			// 	break;
