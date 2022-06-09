@@ -499,14 +499,16 @@ const save = event => {
 
 }
 
+
+
 const set_toggle = ( e, option )  => {
 	const toggle = e.target.classList.contains('tab-toggle') ? e.target : e.target.parentElement
 	const tab = toggle.parentElement
 	// toggle.classList.contains('.tab') ? e.target.parentElement : e.target.parentElement.parentElement
-	let state = !toggle.classList.contains('checked')
-	if( option === 'is_private' ){
-		state = !state
-	}
+	let state = toggle.classList.contains('checked')
+	// if( option === 'is_private' ){
+	// 	state = !state
+	// }
 	const packet = {
 		type: 'board_set_option',
 		uuid: tab.getAttribute('data-uuid'),
@@ -517,8 +519,9 @@ const set_toggle = ( e, option )  => {
 
 	BROKER.publish('SOCKET_SEND', packet)
 
-	toggle.classList.toggle('checked')
 }
+
+
 
 const set_public = e => {
 	set_toggle( e, 'is_private')
@@ -621,7 +624,7 @@ const handle_board = event => {
 
 	const { board, user_uuid } = event
 
-	// console.log( event )
+	console.log( event )
 
 	// validate
 	if( typeof board.uuid !== 'string' ){
@@ -693,6 +696,7 @@ const handle_board = event => {
 		b.is_lock.title = 'board is open - anyone with the URL may edit'
 	}
 	b.is_locked = board.is_locked
+
 
 	// tab
 	const btn = boards.querySelector('.tab[data-uuid="' + board.uuid + '"] .button')
