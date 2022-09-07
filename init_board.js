@@ -328,21 +328,36 @@ window.addEventListener('popstate', e => { // browser nav actions
 
 // init listener:
 scratch.value = '(click anywhere on board to initialize connection)'
-let initializing_boards = false
 let initialized_boards = false // the main init bool
 
+
+let init_loop
+
+
 scratch.addEventListener('click', () => {
-	if( initializing_boards || initialized_boards ) return
-	hal('success', 'initializing...', 1000 )
+
+	if( init_loop || initialized_boards ) return
+
+	hal('success', 'pinging boards...', 1000 )
+
 	BROKER.publish('SOCKET_SEND', {
 		type: 'EXT_init_boards',
 	})
-	initializing_boards = true
-	setTimeout(() => {
-		if( !initialized_boards ){
-			hal('error', 'there seems to have been a problem establishing connection; try refreshing the page' )
+
+	init_loop = setInterval(() => {
+
+		if( initialized_boards ){
+			clearInterval( init_loop )
+			return init_loop = false
 		}
-	}, 5000)
+
+		hal('success', 'pinging boards...', 1000 )
+
+		BROKER.publish('SOCKET_SEND', {
+			type: 'EXT_init_boards',
+		})
+
+	}, 1000 )
 	
 })
 
