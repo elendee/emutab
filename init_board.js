@@ -962,7 +962,7 @@ const init_complete = event => {
 	})
 
 	initialized_boards = true
-	initializing_boards = false
+	// initializing_boards = false
 
 }
 
