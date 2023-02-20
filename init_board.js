@@ -101,7 +101,11 @@ class Board {
 		}, 200 )
 		this.button.addEventListener('click', e => {
 			if( e.target.classList.contains('dir-arrow')) return
-			if( saving ) send_save()
+			if( saving ){
+				clearTimeout( saving )
+				saving = false
+				BROKER.publish('BOARD_SAVE')
+			}
 				// return hal('error', 'wait for save to complete..', 750 )
 			BROKER.publish('BOARD_SET_ACTIVE', {
 				uuid: this.uuid,
