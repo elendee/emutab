@@ -312,7 +312,7 @@ window.addEventListener('keyup', e => {
 		if( editor ){
 			editor.querySelector('.modal-close').click()
 		}else{
-			document.getElementById('options').click()
+			// document.getElementById('options').click()
 		}
 
 	}
