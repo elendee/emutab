@@ -69,23 +69,7 @@ class Board {
 		// DOM
 		this.build_tab()
 	}
-	// build_tab(){
-	// 	this.tab = document.createElement('div')
-	// 	this.tab.classList.add('button')
-	// 	this.tab.title = 'click to set active: ' + this.name
-	// 	this.tab.innerHTML = this.name || this.uuid.substr(0,4)
-	// 	this.tab.setAttribute('data-uuid', this.uuid )
-	// 	setTimeout(() => {
-	// 		this.tab.appendChild( this.build_arrow(1) )
-	// 		this.tab.appendChild( this.build_arrow(0) )			
-	// 	}, 200 )
-	// 	this.tab.addEventListener('click', e => {
-	// 		if( e.target.classList.contains('dir-arrow')) return
-	// 		BROKER.publish('BOARD_SET_ACTIVE', {
-	// 			uuid: this.uuid,
-	// 		})
-	// 	})
-	// }
+
 	build_tab(){
 		this.tab = document.createElement('div')
 		this.tab.classList.add('tab')
@@ -146,14 +130,78 @@ class Board {
 	}
 	build_arrow( dir ){
 		const wrapper = document.createElement('div')
-		wrapper.innerHTML = dir ? '&uarr;' : '&darr;'
+		wrapper.innerHTML = ( dir ? '&uarr;' : '&darr;' )
 		wrapper.setAttribute('data-dir', dir )
 		wrapper.classList.add('dir-arrow', ( dir ? 'up' : 'down') )
-		wrapper.addEventListener('click', move_tab )
+		// wrapper.addEventListener('click', move_tab )
+		wrapper.addEventListener('mousedown', start_drag )
 		return wrapper
 	}
 
 }
+
+// dragging
+const dragger = document.createElement('div')
+dragger.id ='dragger'
+boards.append( dragger )
+let draggerY = 0
+
+let dragged_ele
+
+const start_drag = e => {
+	const tab = e.target.parentElement
+	dragged_ele = tab
+	document.body.addEventListener('mousemove', drag_tab )
+	document.body.addEventListener('mouseup', end_drag )
+	dragger.style.display = 'inline-block'
+}
+const drag_tab = e => {
+	draggerY = e.clientY
+	const hovered = get_tab( draggerY )
+	if( hovered ){
+		dragger.style.top = hovered.getBoundingClientRect().top
+	}else{
+		dragger.style.top = draggerY + 'px'
+	}
+}
+const end_drag = e => {
+	document.body.removeEventListener('mousemove', drag_tab )
+	document.body.addEventListener('mousedown', start_drag )
+	place_tab( dragged_ele )
+	dragger.style.display = 'none'
+
+	setTimeout(() => { // idk what it is about DOM operations...
+		BROKER.publish('SOCKET_SEND', {
+			type: 'save_index',
+			index: build_index(),
+		})		
+	}, 100 )
+
+}
+
+const place_tab = ele => {
+	if( !ele?.classList.contains('tab')) return console.error('no dragged tab found')
+
+	const hovered = get_tab( draggerY )
+	if( hovered ){
+		ele.parentElement.insertBefore( ele, hovered )
+	}else{
+		console.log('no tab found')
+	}
+}
+
+const get_tab = posY => {
+	let bounds
+	for( const tab of boards.querySelectorAll('.tab') ){
+		bounds = tab.getBoundingClientRect()
+		if( draggerY > bounds.top && draggerY < bounds.top + bounds.height ){
+			return tab
+		}
+	}
+}
+
+
+
 
 class User {
 	constructor( init ){
@@ -224,23 +272,21 @@ const get_selection = textarea => {
 	return textarea.value.substr( cursor[0], ( cursor[1] - cursor[0] ) )
 }
 
-const move_tab = e => {
-	const tab = e.target.parentElement
-	const dir = e.target.getAttribute('data-dir')
+// const move_tab = e => {
+// 	const tab = e.target.parentElement
+// 	const dir = e.target.getAttribute('data-dir')
 
-	const shift = Number( dir ) ? 'down': 'up'
+// 	const shift = Number( dir ) ? 'down': 'up'
 
-	lib.shift_element( shift, tab, '.tab', true )
+// 	lib.shift_element( shift, tab, '.tab', true )
 
-	setTimeout(() => { // idk what it is about DOM operations...
-		BROKER.publish('SOCKET_SEND', {
-			type: 'save_index',
-			index: build_index(),
-		})		
-	}, 100 )
-
-
-}
+// 	setTimeout(() => { // idk what it is about DOM operations...
+// 		BROKER.publish('SOCKET_SEND', {
+// 			type: 'save_index',
+// 			index: build_index(),
+// 		})		
+// 	}, 100 )
+// }
 
 const build_index = () => {
 	const index = {

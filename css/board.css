@@ -197,6 +197,7 @@ pre{
 #boards .tab{
 	position: relative;
 	white-space: nowrap;
+	user-select: none;
 }
 .tab.active{
 	background: rgba(255, 255, 255, .1)
@@ -220,15 +221,22 @@ pre{
 	font-weight:  bold;
 	vertical-align: top;
 	cursor: pointer;
-	top:  0px;
 
 	display: none;
+
+	top: 0;
+/*	height: 100px;
+	z-index: 999;
+	top:  -50px;*/
 }
 .dir-arrow.down{
 	right: 30px;
 }
 .dir-arrow.up{
 	right: 0px;
+}
+.tab:hover{
+	background: black;
 }
 .tab:hover .dir-arrow{
 	display:  inline-block;
@@ -237,6 +245,15 @@ pre{
 	background: grey;
 }
 
+#dragger{
+	position: fixed;
+	top: 0;
+	left: 0;
+	height: 5px;
+	width: 100%;
+	background: orange;
+	display: none;
+}
 
 
 

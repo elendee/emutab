@@ -250,74 +250,74 @@ const get_index = ( nodeList, ele ) => {
 }
 
 
-const shift_element = window.shift_element = ( dir, ele, identifier, cycle ) => {
-	/*
-		***
-		'dir' refers to -index order-, not screen space or DOM order
-		***
-	*/
-	if( !ele ){
-		console.log('missing ele for shift')
-		return
-	}
-	const siblings = ele.parentElement.querySelectorAll( identifier )
-	if( !siblings?.length ){
-		console.log('no siblings for shift')
-		return
-	}
+// const shift_element = window.shift_element = ( dir, ele, identifier, cycle ) => {
+// 	/*
+// 		***
+// 		'dir' refers to -index order-, not screen space or DOM order
+// 		***
+// 	*/
+// 	if( !ele ){
+// 		console.log('missing ele for shift')
+// 		return
+// 	}
+// 	const siblings = ele.parentElement.querySelectorAll( identifier )
+// 	if( !siblings?.length ){
+// 		console.log('no siblings for shift')
+// 		return
+// 	}
 
-	const index = get_index( siblings, ele )
-	if( typeof index !== 'number' ){
-		console.log('invalid move', ele, index)
-		return
-	}
-	let prev_sib = siblings[ index - 1 ]
-	let next_sib = siblings[ index + 2 ]
+// 	const index = get_index( siblings, ele )
+// 	if( typeof index !== 'number' ){
+// 		console.log('invalid move', ele, index)
+// 		return
+// 	}
+// 	let prev_sib = siblings[ index - 1 ]
+// 	let next_sib = siblings[ index + 2 ]
 
-	console.log( 'shift index :', dir, !!prev_sib )
+// 	console.log( 'shift index :', dir, !!prev_sib )
 
-	switch( dir ){
+// 	switch( dir ){
 
-		case 'up':
-			/*
-				[parent] insertBefore [insertion node] [reference node]
-			*/
-			if( !next_sib ){
-				if( siblings[ index + 1 ]){
-					ele.parentElement.appendChild( ele )
-					return
-				}else if( cycle ){
-					ele.parentElement.insertBefore( ele, siblings[0] )
-					return
-				}
-			}
-			ele.parentElement.insertBefore( ele, next_sib )
-			break;
+// 		case 'up':
+// 			/*
+// 				[parent] insertBefore [insertion node] [reference node]
+// 			*/
+// 			if( !next_sib ){
+// 				if( siblings[ index + 1 ]){
+// 					ele.parentElement.appendChild( ele )
+// 					return
+// 				}else if( cycle ){
+// 					ele.parentElement.insertBefore( ele, siblings[0] )
+// 					return
+// 				}
+// 			}
+// 			ele.parentElement.insertBefore( ele, next_sib )
+// 			break;
 
-		case 'down':
-			if( !prev_sib ){
-				if( !cycle ){ // because null child ref will still work otherwise
-					console.log('no prev sib for shift')
-					return
-				}else{
-					/*
-						this assumes that there is no other content in parentElement
-						in some cases this could be bad
-					*/
-					ele.parentElement.appendChild( ele )
-					return
-				}
-			}
-			ele.parentElement.insertBefore( ele, prev_sib )
-			break;
+// 		case 'down':
+// 			if( !prev_sib ){
+// 				if( !cycle ){ // because null child ref will still work otherwise
+// 					console.log('no prev sib for shift')
+// 					return
+// 				}else{
+// 					/*
+// 						this assumes that there is no other content in parentElement
+// 						in some cases this could be bad
+// 					*/
+// 					ele.parentElement.appendChild( ele )
+// 					return
+// 				}
+// 			}
+// 			ele.parentElement.insertBefore( ele, prev_sib )
+// 			break;
 
-		default: 
-			console.log('invalid shift dir', dir )
-			break;
+// 		default: 
+// 			console.log('invalid shift dir', dir )
+// 			break;
 
-	}
+// 	}
 
-}
+// }
 
 
 
@@ -423,7 +423,7 @@ export {
 	over_cap,
 	generate_content,
 	get_index,
-	shift_element,
+	// shift_element,
 	offset_color,
 	is_hex_color,
 }
