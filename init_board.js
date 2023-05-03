@@ -79,22 +79,12 @@ class Board {
 		this.tab.title = 'click to set active: ' + this.name
 		this.button.innerHTML = this.name || this.uuid.substr(0,4)
 		this.tab.setAttribute('data-uuid', this.uuid )
+		this.button.setAttribute('data-uuid', this.uuid )
 		setTimeout(() => {
 			this.tab.appendChild( this.build_arrow(1) )
 			this.tab.appendChild( this.build_arrow(0) )			
 		}, 200 )
-		this.button.addEventListener('click', e => {
-			if( e.target.classList.contains('dir-arrow')) return
-			if( saving ){
-				clearTimeout( saving )
-				saving = false
-				BROKER.publish('BOARD_SAVE')
-			}
-				// return hal('error', 'wait for save to complete..', 750 )
-			BROKER.publish('BOARD_SET_ACTIVE', {
-				uuid: this.uuid,
-			})
-		})
+		this.button.addEventListener('click', click_tab )
 
 		// eye icon
 		const is_priv = this.is_priv = document.createElement('div')
@@ -140,6 +130,27 @@ class Board {
 
 }
 
+
+// main button clicks
+const click_tab = e => {
+
+	const btn = e.target
+	const uuid = btn.getAttribute('data-uuid')
+
+	if( btn.classList.contains('dir-arrow')) return console.log('(is arrow)')
+	if( saving ){
+		clearTimeout( saving )
+		saving = false
+		BROKER.publish('BOARD_SAVE')
+	}
+		// return hal('error', 'wait for save to complete..', 750 )
+	BROKER.publish('BOARD_SET_ACTIVE', {
+		uuid: uuid,
+	})
+
+}
+
+
 // dragging
 const dragger = document.createElement('div')
 dragger.id ='dragger'
@@ -166,7 +177,6 @@ const drag_tab = e => {
 }
 const end_drag = e => {
 	document.body.removeEventListener('mousemove', drag_tab )
-	document.body.addEventListener('mousedown', start_drag )
 	place_tab( dragged_ele )
 	dragger.style.display = 'none'
 
@@ -177,6 +187,8 @@ const end_drag = e => {
 		})		
 	}, 100 )
 
+	document.body.removeEventListener('mouseup', end_drag )
+
 }
 
 const place_tab = ele => {
@@ -185,6 +197,9 @@ const place_tab = ele => {
 	const hovered = get_tab( draggerY )
 	if( hovered ){
 		ele.parentElement.insertBefore( ele, hovered )
+		setTimeout(() => {
+			hovered.querySelector('.button').addEventListener('click', click_tab )
+		}, 100 )
 	}else{
 		console.log('no tab found')
 	}
@@ -235,7 +250,7 @@ const render_colors = board_data => {
 		const btn = tab.querySelector( selector )
 		if( btn ){
 			btn.style['background'] = board_data.tab_color //+ '99'
-			console.log(`testing ${ board_data.name }`)
+			// console.log(`testing ${ board_data.name }`)
 			const c = lib.offset_color( board_data.tab_color, true )
 			// console.log('renderd : ', c )
 			btn.style.color = c
@@ -689,7 +704,7 @@ const handle_board = event => {
 
 	const { board, user_uuid } = event
 
-	console.log( event )
+	// console.log( 'handle board: ', event )
 
 	// validate
 	if( typeof board.uuid !== 'string' ){
@@ -1047,9 +1062,7 @@ const remove_board = event => {
 
 const user_propagate = event => {
 	const { user } = event
-
-	console.log('propagating: ', user )
-
+	// console.log('propagating: ', user )
 	for( const field in user ){
 		USER[ field ] = user[ field ]
 	}
