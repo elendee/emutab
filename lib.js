@@ -212,11 +212,12 @@ const is_unix_timestamp = timestamp => { // returns true if correct string or nu
 
 const trimStrict = string => {
     // Remove leading spaces
-    while(string.indexOf(' ') === 0) {
+    while(string.indexOf('    ') === 0) {
         string = string.substr(1);
     }
     // Remove trailing spaces
-    while(string[string.length-1] === ' ') {
+    // while(string[string.length-4] === '    ') {
+    while(string.match(/    $/) ){
         string = string.substr(0, string.length-1);
     }
     return string;
