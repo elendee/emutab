@@ -1183,7 +1183,7 @@ if( window.innerWidth > 800 ){
 		for( const app of apps ){
 			const wrap = lib.b('div', false, 'app-row')
 			const link = lib.b('a')
-			link.href = 'localhost:' + port
+			link.href = 'http://localhost:' + port
 			link.innerText = `${app} :${port}`
 			wrap.append( link )
 			listing.append( wrap )
@@ -1204,7 +1204,7 @@ if( window.innerWidth > 800 ){
 	document.body.append( node_ports )
 	setTimeout(() => {
 		node_ports.remove()
-	}, 8 * 1000 )
+	}, 10 * 1000 )
 }
 
 
