@@ -1170,6 +1170,11 @@ const socket = window.socket = WS.init()
 
 
 if( window.innerWidth > 800 ){
+
+	if( !config.LOCALHOSTS ){
+		console.warn('no localhosts declared in env for quick-starts')
+	}
+
 	const node_ports = lib.b('div', 'node-ports')
 	const ports = {}
 	for( const key in config.LOCALHOSTS || {} ){
