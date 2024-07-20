@@ -1,4 +1,4 @@
-// import config from './config.js?v=39'
+import config from './config.js?v=39'
 import WS from './WS.js?v=39'
 import hal from './hal.js?v=39'
 // import fetch_wrap from './fetch_wrap.js?v=39'
@@ -39,8 +39,6 @@ document.body.classList.add('board')
 
 // const is_auth = header.getAttribute('data-auth') === 'true'
 // const is_admin = header.getAttribute('data-admin') === 'true'
-
-
 
 
 
@@ -1171,6 +1169,43 @@ const socket = window.socket = WS.init()
 
 
 
+if( window.innerWidth > 800 ){
+	const node_ports = lib.b('div', 'node-ports')
+	const ports = {}
+	for( const key in config.LOCALHOSTS || {} ){
+		const port = config.LOCALHOSTS[key]
+		if( !ports[ port ] ) ports[ port ] = []
+		ports[ port ].push( key )
+	}	
+	for( const port in ports ){
+		const apps = ports[ port ]
+		const listing = lib.b('div', false, 'port-listing')
+		for( const app of apps ){
+			const wrap = lib.b('div', false, 'app-row')
+			const link = lib.b('a')
+			link.href = 'localhost:' + port
+			link.innerText = `${app} :${port}`
+			wrap.append( link )
+			listing.append( wrap )
+
+			// fetch_wrap( 'http://' + link, 'post', {} )
+			// .then( res => {
+			// 	wrap.classList.add('active')
+			// 	console.log( res )
+			// })
+			// .catch( err => {
+			// 	console.log('no res: ', link )
+			// 	console.error( err )
+			// })
+
+		}
+		node_ports.append( listing )
+	}
+	document.body.append( node_ports )
+	setTimeout(() => {
+		node_ports.remove()
+	}, 8 * 1000 )
+}
 
 
 

@@ -390,7 +390,12 @@ const offset_color = ( color, contrast ) => {
 
 
 
-
+const b = ( type, id, ...classes ) => {
+	const ele = document.createElement( type )
+	if( id ) ele.id = id
+	for( const c of classes || [] ) ele.classList.add( c )
+	return ele
+}
 
 
 
@@ -427,4 +432,5 @@ export {
 	// shift_element,
 	offset_color,
 	is_hex_color,
+	b,
 }

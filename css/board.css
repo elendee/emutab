@@ -516,6 +516,23 @@ span.board-touch{
 	width: 100%;
 }
 
+#node-ports{
+	position: fixed;
+	top: 50px;
+	right: 10px;
+	background: lightgrey;
+	padding: 10px;
+	font-size: .9rem;
+	z-index: 99;
+	opacity: .8;
+}
+.port-listing{
+	margin: 20px 0;
+}
+.app-row.active{
+	background: green;
+}
+
 @media screen and (max-width: 800px){
 	#content{
 		height: calc(100vh - 70px);
