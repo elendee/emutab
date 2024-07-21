@@ -361,9 +361,6 @@ scratch.addEventListener('keydown', e => { // keyup seems to get 'just entered w
 	}, GLOBAL.BOARDS.SAVE_INTERVAL)
 })
 
-scratch.addEventListener('click', e => { // keyup seems to get 'just entered window' release events
-	update_line(e)
-})
 
 window.addEventListener('keyup', e => {
 	if( e.keyCode === 27 ){
@@ -396,8 +393,11 @@ let initialized_boards = false // the main init bool
 
 let init_loop
 
+scratch.addEventListener('click', (e) => {
 
-scratch.addEventListener('click', () => {
+	update_line(e)
+
+	if( init_option_panel ) init_option_panel.remove()
 
 	if( init_loop || initialized_boards ) return
 
@@ -1169,12 +1169,17 @@ const socket = window.socket = WS.init()
 
 
 
+let init_option_panel
+
 if( window.innerWidth > 800 ){
 
 	if( !config.LOCALHOSTS ){
 		console.warn('no localhosts declared in env for quick-starts')
 	}
 
+	init_option_panel = lib.b('div', 'options-panel')
+
+	// localhost apps
 	const node_ports = lib.b('div', 'node-ports')
 	const ports = {}
 	for( const key in config.LOCALHOSTS || {} ){
@@ -1189,27 +1194,30 @@ if( window.innerWidth > 800 ){
 			const wrap = lib.b('div', false, 'app-row')
 			const link = lib.b('a')
 			link.href = 'http://localhost:' + port
-			link.innerText = `${app} :${port}`
+			link.innerText = `${port}:${app}`
 			wrap.append( link )
 			listing.append( wrap )
-
-			// fetch_wrap( 'http://' + link, 'post', {} )
-			// .then( res => {
-			// 	wrap.classList.add('active')
-			// 	console.log( res )
-			// })
-			// .catch( err => {
-			// 	console.log('no res: ', link )
-			// 	console.error( err )
-			// })
-
 		}
 		node_ports.append( listing )
 	}
-	document.body.append( node_ports )
-	setTimeout(() => {
-		node_ports.remove()
-	}, 10 * 1000 )
+	init_option_panel.append( node_ports )
+
+	// live sites
+	const live_apps = lib.b('div', 'live-apps')
+	const apps = {}
+	for( const key in config.LIVE_APPS || {} ){
+		const app_link = config.LIVE_APPS[key]
+		// if( !apps[ key ] ) apps[ key ] = []
+		const wrap = lib.b('div', false, 'app-row-live')
+		const link = lib.b('a')
+		link.href = app_link
+		link.innerText = `${key}`
+		wrap.append( link )
+		live_apps.append( wrap )
+	}
+	init_option_panel.append( live_apps )
+
+	document.body.append( init_option_panel )
 }
 
 

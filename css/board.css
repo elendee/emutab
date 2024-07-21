@@ -516,7 +516,7 @@ span.board-touch{
 	width: 100%;
 }
 
-#node-ports{
+#options-panel{
 	position: fixed;
 	top: 50px;
 	right: 10px;
@@ -526,11 +526,17 @@ span.board-touch{
 	z-index: 99;
 	opacity: .8;
 }
+#node-ports{
+/*	border: 2px solid red;*/
+}
 .port-listing{
 	margin: 20px 0;
 }
 .app-row.active{
 	background: green;
+}
+#live-apps *{
+	font-weight: bold;
 }
 
 @media screen and (max-width: 800px){
