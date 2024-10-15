@@ -1,5 +1,5 @@
-import hal from './hal.js?v=39'
-import GLOBAL from './GLOBAL.js?v=39'
+import hal from './hal.js?v=40'
+import GLOBAL from './GLOBAL.js?v=40'
 
 
 

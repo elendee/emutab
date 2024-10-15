@@ -1,4 +1,4 @@
-import config from './config.js?v=39'
+import config from './config.js?v=40'
 
 
 

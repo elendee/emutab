@@ -1,9 +1,9 @@
 
-import ui from './ui.js?v=39'
-import config from './config.js?v=39'
-import hal from './hal.js?v=39'
-import BROKER from './EventBroker.js?v=39'
-import USER from './USER.js?v=39'
+import ui from './ui.js?v=40'
+import config from './config.js?v=40'
+import hal from './hal.js?v=40'
+import BROKER from './EventBroker.js?v=40'
+import USER from './USER.js?v=40'
 
 
 

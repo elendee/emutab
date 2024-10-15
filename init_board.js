@@ -1,12 +1,12 @@
-import config from './config.js?v=39'
-import WS from './WS.js?v=39'
-import hal from './hal.js?v=39'
-// import fetch_wrap from './fetch_wrap.js?v=39'
-import * as lib from './lib.js?v=39'
-import ui from './ui.js?v=39'
+import config from './config.js?v=40'
+import WS from './WS.js?v=40'
+import hal from './hal.js?v=40'
+// import fetch_wrap from './fetch_wrap.js?v=40'
+import * as lib from './lib.js?v=40'
+import ui from './ui.js?v=40'
 // import {
 // 	Modal,
-// } from './Modal.js?v=39'
+// } from './Modal.js?v=40'
 import {
 	boards,
 	scratch,
@@ -14,11 +14,11 @@ import {
 	invites,// public boards wrapper
 	line_place,
 	line_total,
-} from  './board_ui.js?v=39' 
-import BROKER from './EventBroker.js?v=39'
-import USER from './USER.js?v=39'
-import GLOBAL from './GLOBAL.js?v=39'
-import pop_options_modal from './board_settings.js?v=39'
+} from  './board_ui.js?v=40' 
+import BROKER from './EventBroker.js?v=40'
+import USER from './USER.js?v=40'
+import GLOBAL from './GLOBAL.js?v=40'
+import pop_options_modal from './board_settings.js?v=40'
 
 
 
@@ -73,14 +73,14 @@ class Board {
 		this.tab.classList.add('tab')
 		this.button = document.createElement('div')
 		this.button.classList.add('button')
-		this.tab.appendChild( this.button )
+		this.tab.append( this.button )
 		this.tab.title = 'click to set active: ' + this.name
 		this.button.innerHTML = this.name || this.uuid.substr(0,4)
 		this.tab.setAttribute('data-uuid', this.uuid )
 		this.button.setAttribute('data-uuid', this.uuid )
 		setTimeout(() => {
-			this.tab.appendChild( this.build_arrow(1) )
-			this.tab.appendChild( this.build_arrow(0) )			
+			this.tab.append( this.build_arrow(1) )
+			this.tab.append( this.build_arrow(0) )			
 		}, 200 )
 		this.button.addEventListener('click', click_tab )
 
@@ -90,7 +90,7 @@ class Board {
 		// is_priv.innerHTML = '<img src="/resource/media/eye.svg">'
 		const img_priv = this.img_priv = document.createElement('img')
 		img_priv.src = '/resource/media/eye.png'
-		is_priv.appendChild( img_priv )
+		is_priv.append( img_priv )
 		is_priv.addEventListener('click', set_public )
 		this.tab.prepend( is_priv )
 
@@ -100,7 +100,7 @@ class Board {
 		// is_lock.innerHTML = '<img src="/resource/media/lock.png">'
 		const img_lock = this.img_lock = document.createElement('img')
 		img_lock.src = '/resource/media/pencil.png'
-		is_lock.appendChild( img_lock )
+		is_lock.append( img_lock )
 		is_lock.addEventListener('click', set_locked )
 		this.tab.prepend( is_lock )
 
@@ -514,13 +514,19 @@ const preview_anchor = e => {
 
 
 
+
+
 const set_active = event => { // private or public
 
 	console.log( 'set-active', event )
 
 	event = event || {}
 
-	const { uuid, skip_state } = event
+	const { 
+		uuid, 
+		skip_state, 
+		is_local_storage 
+	} = event
 
 	// handle button
 	for( const b of boards.querySelectorAll('.tab')){
@@ -540,16 +546,43 @@ const set_active = event => { // private or public
 		const board = BOARDS[ uuid ]
 		const btn = boards.querySelector('.tab[data-uuid="' + uuid + '"]')
 		if( !btn || !board ){
-			console.log(`invalid set-active target-uuid (${ uuid }) uuid (${ uuid })`)
+			console.warn(`invalid set-active target-uuid`, {
+				uuid,
+				btn: !!btn,
+				board: !!board,
+			})
+			if( is_local_storage ){
+				delete localStorage[ 'emu-active-tab']
+			}
+			// throw new Error('fromw whence')
 			return
 		}		
 		btn.classList.add('active')
-		scratch.value = board.content
+
+		// boom, the content
+		if( !board.CONTENT ){
+			// fetch_wrap()
+			BROKER.publish('SOCKET_SEND', {
+				type: 'touch_content',
+				uuid,
+			})
+
+		}else{
+
+			scratch.value = board.CONTENT 
+
+		}
+
+		scratch.focus()
 
 		render_colors( board )
+
 		localStorage.setItem('emu-active-tab', uuid )
 
+
 	}
+
+	// if( !skip_state ) window.history.pushState( {}, '', '/board/' + ( uuid || '' ) )
 
 }
 
@@ -700,7 +733,10 @@ const handle_users = event => {
 
 const handle_board = event => {
 
-	const { board, user_uuid } = event
+	const { 
+		board, 
+		user_uuid 
+	} = event
 
 	// console.log( 'handle board: ', event )
 
@@ -715,27 +751,41 @@ const handle_board = event => {
 	if( !b ){ // handle new board
 		BOARDS[ board.uuid ] = b = new Board( board )
 		if( board.is_owner ){
-			priv.appendChild( b.tab )
+			priv.append( b.tab )
 		}else{
-			invites.appendChild( b.tab )
+			invites.append( b.tab )
 		}
 	}else{ // update existing board
-		b.content = board.content 
-	}	
+		if( typeof board._content === 'string' ){
+			// console.warn('should be deprecated board content inside handle-board.  Switch content updates to a discrete event')
+			b.CONTENT = board._content
+
+			// if( get_active_board() == board.uuid ){
+			// 	scratch.value = board._content
+			// }
+
+		}else{
+			// 
+		}
+	}		
 
 	// hydrate board from response
 	for( const key in board ){
+		if( key === 'content' ){
+			console.warn('no more content in handle-board')
+			continue
+		}
 		b[ key ] = board[ key ]
 	}
 
 	// render board if active
-	if( get_active_board() === b.uuid ){
+	if( board?.uuid && get_active_board() === board.uuid ){
 
 		const selection_index = [scratch.selectionStart, scratch.selectionEnd]
 
 		const selection_content = get_selection( scratch )
 
-		scratch.value = b.content || ''// lib.generate_content()
+		scratch.value = b._content || ''
 
 		const value_check = scratch.value.substr( selection_index[0], ( selection_index[1] - selection_index[0] ))
 
@@ -831,12 +881,12 @@ const sort_boards = () => {
 		for( const uuid of sorted.account ){
 			for( const ele of suspended_priv ){
 				if( ele.getAttribute('data-uuid') === uuid ){
-					priv.appendChild( ele )
+					priv.append( ele )
 				}
 			}
 		}
 		for( const ele of suspended_priv ){
-			if( !ele.parentElement ) priv.appendChild( ele )
+			if( !ele.parentElement ) priv.append( ele )
 		}
 
 		// all
@@ -845,13 +895,13 @@ const sort_boards = () => {
 		for( const uuid of sorted.all ){
 			for( const ele of suspended_all ){
 				if( ele.getAttribute('data-uuid') === uuid ){
-					invites.appendChild( ele )
+					invites.append( ele )
 					// debugger
 				}
 			}
 		}
 		for( const ele of suspended_all ){
-			if( !ele.parentElement ) invites.appendChild( ele )
+			if( !ele.parentElement ) invites.append( ele )
 		}
 
 	}catch( err ){
@@ -977,11 +1027,11 @@ const pong_anchor = event => {
 	preview.classList.add('anchor-preview')
 	const expl = document.createElement('div')
 	expl.innerText = 'Previewing anchor from: ' + date
-	preview.appendChild( expl )
+	preview.append( expl )
 	const area = document.createElement('textarea')
 	area.value = anchor.content
 	area.disabled = true
-	preview.appendChild( area )
+	preview.append( area )
 
 	// set colors
 	let fg_color, bg_color
@@ -1000,15 +1050,15 @@ const pong_anchor = event => {
 		hal('success', 'set board to anchor from:<br>' + date, 5000 )
 		preview.remove()
 	})
-	preview.appendChild( set )
+	preview.append( set )
 	const cancel = document.createElement('div')
 	cancel.classList.add('button')
 	cancel.innerHTML = 'cancel'
 	cancel.addEventListener('click', () => {
 		preview.remove()
 	})
-	preview.appendChild( cancel )
-	content.appendChild( preview )
+	preview.append( cancel )
+	content.append( preview )
 	// hal('standard', '(coming soon)<br><pre>' + anchor.content + '</pre>', 2000 )
 	// console.log( anchor )
 }
@@ -1016,12 +1066,9 @@ const pong_anchor = event => {
 const init_complete = event => {
 	// const {  } = event
 
-	// if( !get_active_board() ){
-	// 	scratch.value = ''
-	// }
-
 	set_active({ 
 		uuid: localStorage.getItem('emu-active-tab'),
+		is_local_storage: true,
 	})
 
 	initialized_boards = true
