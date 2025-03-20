@@ -1226,6 +1226,16 @@ if( window.innerWidth > 800 ){
 
 	init_option_panel = lib.b('div', 'options-panel')
 
+	// custom
+	const clients = lib.b('div', 'custom-links')
+	const c = lib.b('a')
+	c.innerText =  'localhost/clients'
+	c.href = config.CLIENT_LINK || 'http://localhost/clients'
+	clients.append( c )
+	init_option_panel.append( clients )
+
+	init_option_panel.append( lib.b('div', false, 'divider'))
+
 	// localhost apps
 	const node_ports = lib.b('div', 'node-ports')
 	const ports = {}
@@ -1249,9 +1259,12 @@ if( window.innerWidth > 800 ){
 	}
 	init_option_panel.append( node_ports )
 
+	init_option_panel.append( lib.b('div', false, 'divider'))
+
+
 	// live sites
 	const live_apps = lib.b('div', 'live-apps')
-	const apps = {}
+	// const apps = {}
 	for( const key in config.LIVE_APPS || {} ){
 		const app_link = config.LIVE_APPS[key]
 		// if( !apps[ key ] ) apps[ key ] = []
