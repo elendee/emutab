@@ -856,9 +856,6 @@ const handle_board = event => {
 			awaiting_sort = false
 		}, 500 )
 	}
-	// if( USER._board_order ){
-	// 	sort_boards()
-	// }
 
 }
 

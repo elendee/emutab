@@ -178,7 +178,7 @@ const pop_options_modal = event => {
 
 	// ---- board URL
 	const expl = document.createElement('div')
-	const origin = config.WS_URL.match(/emu.oko.nyc/) ? 'https://emu.oko.nyc' : '[unknown host]'
+	const origin = config.WS_URL.match(/accounts.oko.nyc/) ? 'https://accounts.oko.nyc' : '[unknown host]'
 	const url = `${ origin }/board/${ board.uuid }`
 	expl.innerHTML = `share this board: <br><input value="${ url }">` // .substr(1,6)
 	expl.classList.add('board-share')

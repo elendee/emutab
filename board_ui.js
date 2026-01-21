@@ -58,7 +58,7 @@ const get_active_board = window.get_active_board = () => {
 
 const parse_emu_location = data => {
 	if( location.href.match(/chrome-extension/)) return data
-	if( data.match(/emu.oko.nyc/)) return 'emu.oko.nyc'
+	if( data.match(/accounts.oko.nyc/)) return 'accounts.oko.nyc'
 	return data
 }
 
